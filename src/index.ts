@@ -127,7 +127,7 @@ function buildEmbed(target: string, guesses: string[], firstTime: boolean) {
 		"⬛⬛⬛⬛⬛ `-----`\n".repeat(6 - guesses.length).trim();
 
 	return new MessageEmbed()
-		.setTitle("Wordle " + target)
+		.setTitle("Wordle")
 		.setColor(Constants.embedColor)
 		.setDescription(
 			firstTime
