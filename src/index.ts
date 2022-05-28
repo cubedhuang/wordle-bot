@@ -37,6 +37,11 @@ client.on("messageCreate", async message => {
 		!playingUsers.has(message.author.id)
 	) {
 		await reply(message, "You're not currently in a game!");
+	} else if (
+		message.content.match(/^-quit\b/) &&
+		!playingUsers.has(message.author.id)
+	) {
+		await reply(message, "You're not currently in a game!");
 	}
 });
 
@@ -85,7 +90,9 @@ function buildEmbed(target: string, guesses: string[], firstTime: boolean) {
 		.setTitle("Wordle")
 		.setColor(CONSTANTS.embedColor)
 		.setDescription(
-			firstTime ? `Use \`-guess\` to guess a word.\n\n${grid}` : grid
+			firstTime
+				? `Use \`-guess\` to guess a word or \`-quit\` to stop playing.\n\n${grid}`
+				: grid
 		);
 }
 
@@ -94,7 +101,8 @@ function nextGuess(message: Message) {
 		const callback = (m: Message) => {
 			if (
 				m.author.id === message.author.id &&
-				!!m.content.match(/^-guess\b/)
+				(!!m.content.match(/^-guess\b/) ||
+					!!m.content.match(/^-quit\b/))
 			) {
 				client.removeListener("messageCreate", callback);
 				resolve(m);
@@ -107,7 +115,10 @@ function nextGuess(message: Message) {
 
 async function startGame(message: Message) {
 	if (playingUsers.has(message.author.id)) {
-		await reply(message, "You're already playing a game!");
+		await reply(
+			message,
+			"You're already playing a game! Use `-quit` to stop playing your current game."
+		);
 		return;
 	}
 
@@ -127,6 +138,13 @@ async function startGame(message: Message) {
 		}
 
 		const guessMessage = await nextGuess(message);
+
+		if (guessMessage.content.startsWith("-quit")) {
+			playingUsers.delete(message.author.id);
+			await reply(message, "Stopped the current game.");
+			return;
+		}
+
 		currentMessage = guessMessage;
 		const match = guessMessage.content.match(/^-guess\s+(.{5})$/);
 
