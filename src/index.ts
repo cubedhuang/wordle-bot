@@ -54,6 +54,22 @@ function getCommand(content: string) {
 	return { name, args };
 }
 
+const helpEmbed = new MessageEmbed()
+	.setColor(Constants.embedColor)
+	.setTitle("Wordle Bot")
+	.setDescription(
+		"Wordle is a simple bot that lets you play Wordle in your Discord server!"
+	)
+	.addField(
+		"Commands",
+		`
+\`${Constants.prefix}help\`: Shows this message.
+\`${Constants.prefix}wordle\`: Start a game of Wordle! Wordle games are currently per-user, and multiple people can play a game in a channel at once.
+\`${Constants.prefix}guess\`: Guess a word in your current Wordle game.
+\`${Constants.prefix}quit\`: Stop your current Wordle game.
+`.trim()
+	);
+
 client.on("messageCreate", async message => {
 	if (message.author.bot) return;
 
@@ -62,6 +78,9 @@ client.on("messageCreate", async message => {
 	const { name } = getCommand(message.content);
 
 	switch (name) {
+		case "help":
+			await reply(message, helpEmbed);
+			break;
 		case "wordle":
 			await startGame(message);
 			break;
@@ -90,7 +109,7 @@ async function reply(message: Message, content: string): Promise<Message>;
 async function reply(
 	message: Message,
 	embed: MessageEmbed,
-	file: MessageAttachment
+	file?: MessageAttachment
 ): Promise<Message>;
 async function reply(
 	message: Message,
@@ -102,7 +121,10 @@ async function reply(
 			embeds: [{ color: Constants.embedColor, description: content }]
 		});
 	} else {
-		return await message.reply({ embeds: [content], files: [file!] });
+		return await message.reply({
+			embeds: [content],
+			files: file ? [file] : undefined
+		});
 	}
 }
 
