@@ -74,7 +74,7 @@ function buildGrid(target: string, guesses: string[], displayWords = true) {
 	return grid;
 }
 
-function buildEmbed(target: string, guesses: string[]) {
+function buildEmbed(target: string, guesses: string[], firstTime: boolean) {
 	let grid = buildGrid(target, guesses);
 
 	for (let i = 0; i < 6 - guesses.length; i++) {
@@ -84,7 +84,9 @@ function buildEmbed(target: string, guesses: string[]) {
 	return new MessageEmbed()
 		.setTitle("Wordle")
 		.setColor(CONSTANTS.embedColor)
-		.setDescription(`Use \`-guess\` to guess a word.\n\n${grid}`);
+		.setDescription(
+			firstTime ? `Use \`-guess\` to guess a word.\n\n${grid}` : grid
+		);
 }
 
 function nextGuess(message: Message) {
@@ -114,16 +116,18 @@ async function startGame(message: Message) {
 	const target =
 		words.answers[Math.floor(Math.random() * words.answers.length)];
 	const guesses: string[] = [];
+	let currentMessage = message;
 	let repeatEmbed = true;
 
 	while (guesses.length < 6 && guesses.at(-1) !== target) {
 		if (repeatEmbed) {
-			const embed = buildEmbed(target, guesses);
-			await reply(message, embed);
+			const embed = buildEmbed(target, guesses, guesses.length === 0);
+			await reply(currentMessage, embed);
 			repeatEmbed = false;
 		}
 
 		const guessMessage = await nextGuess(message);
+		currentMessage = guessMessage;
 		const match = guessMessage.content.match(/^-guess\s+(.{5})$/);
 
 		if (!match) {
