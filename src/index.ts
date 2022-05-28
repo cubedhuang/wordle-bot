@@ -173,13 +173,13 @@ async function startGame(message: Message) {
 	await reply(
 		message,
 		`
-You ${guesses.at(-1) === target ? "win!" : "lost..."} The word was ${target}!
+You ${guesses.at(-1) === target ? "win!" : "lost..."} The word was ${target}.
 
 Wordle Bot ${didWin ? guesses.length : "X"}/6
 
 ${buildGrid(target, guesses, false)}
-`
+`.trim()
 	);
 }
 
-client.login(process.env.TOKEN);
+await client.login(process.env.TOKEN);
