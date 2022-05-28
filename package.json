@@ -1,4 +1,9 @@
 {
+	"name": "wordle-bot",
+	"description": "Discord bot that lets you play Wordle.",
+	"author": "cubedhuang <cubedhuang@gmail.com>",
+	"version": "1.0.0",
+	"license": "MIT",
 	"type": "module",
 	"scripts": {
 		"start": "tsc && node --no-warnings --es-module-specifier-resolution=node ./build/src/index.js"
