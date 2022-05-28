@@ -9,6 +9,7 @@
 		"start": "tsc && node --no-warnings --es-module-specifier-resolution=node ./build/src/index.js"
 	},
 	"dependencies": {
+		"@napi-rs/canvas": "^0.1.21",
 		"discord.js": "^13.7.0",
 		"dotenv": "^16.0.1"
 	},

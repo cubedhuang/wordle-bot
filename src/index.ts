@@ -1,9 +1,16 @@
 import "dotenv/config";
 
-import { Client, Intents, Message, MessageEmbed } from "discord.js";
+import {
+	Client,
+	Intents,
+	Message,
+	MessageAttachment,
+	MessageEmbed
+} from "discord.js";
 import { inspect } from "node:util";
 
 import { Constants } from "./constants";
+import { buildImage } from "./image";
 import { words } from "./wordle";
 
 const client = new Client({
@@ -72,13 +79,23 @@ client.on("messageCreate", async message => {
 	}
 });
 
-async function reply(message: Message, content: string | MessageEmbed) {
+async function reply(message: Message, content: string): Promise<Message>;
+async function reply(
+	message: Message,
+	embed: MessageEmbed,
+	file: MessageAttachment
+): Promise<Message>;
+async function reply(
+	message: Message,
+	content: string | MessageEmbed,
+	file?: MessageAttachment
+) {
 	if (typeof content === "string") {
-		await message.reply({
+		return await message.reply({
 			embeds: [{ color: Constants.embedColor, description: content }]
 		});
 	} else {
-		await message.reply({ embeds: [content] });
+		return await message.reply({ embeds: [content], files: [file!] });
 	}
 }
 
@@ -121,19 +138,19 @@ function buildGrid(target: string, guesses: string[], displayWords = true) {
 	return grid;
 }
 
-function buildEmbed(target: string, guesses: string[], firstTime: boolean) {
-	const grid =
-		buildGrid(target, guesses) +
-		"⬛⬛⬛⬛⬛ `-----`\n".repeat(6 - guesses.length).trim();
-
-	return new MessageEmbed()
+function buildEmbed(firstTime: boolean) {
+	const embed = new MessageEmbed()
 		.setTitle("Wordle")
 		.setColor(Constants.embedColor)
-		.setDescription(
-			firstTime
-				? `Use \`${Constants.prefix}guess\` to guess a word or \`${Constants.prefix}quit\` to stop playing.\n\n${grid}`
-				: grid
+		.setImage("attachment://wordle.png");
+
+	if (firstTime) {
+		embed.setDescription(
+			`Use \`${Constants.prefix}guess\` to guess a word or \`${Constants.prefix}quit\` to stop playing.`
 		);
+	}
+
+	return embed;
 }
 
 function nextGuess(message: Message) {
@@ -171,8 +188,12 @@ async function startGame(message: Message) {
 
 	while (guesses.length < 6 && guesses.at(-1) !== target) {
 		if (repeatEmbed) {
-			const embed = buildEmbed(target, guesses, guesses.length === 0);
-			await reply(currentMessage, embed);
+			const embed = buildEmbed(guesses.length === 0);
+			await reply(
+				currentMessage,
+				embed,
+				new MessageAttachment(buildImage(target, guesses), "wordle.png")
+			);
 			repeatEmbed = false;
 		}
 
@@ -186,7 +207,10 @@ async function startGame(message: Message) {
 
 		if (name === "quit") {
 			playingUsers.delete(message.author.id);
-			await reply(message, "Stopped the current game.");
+			await reply(
+				message,
+				`Stopped the current game. The word was ${target}.`
+			);
 			return;
 		}
 
@@ -207,16 +231,26 @@ async function startGame(message: Message) {
 	playingUsers.delete(message.author.id);
 
 	const didWin = guesses.at(-1) === target;
-	await reply(
-		message,
-		`
-You ${guesses.at(-1) === target ? "win!" : "lost..."} The word was ${target}.
+
+	const embed = new MessageEmbed()
+		.setTitle(didWin ? "You won!" : "You lost...")
+		.setDescription(
+			`
+The word was ${target}.
 
 Wordle Bot ${didWin ? guesses.length : "X"}/6
 
 ${buildGrid(target, guesses, false)}
 `.trim()
+		)
+		.setImage("attachment://wordle.png")
+		.setColor(Constants.embedColor);
+	const image = new MessageAttachment(
+		buildImage(target, guesses),
+		"wordle.png"
 	);
+
+	await reply(message, embed, image);
 }
 
 await client.login(process.env.TOKEN);
