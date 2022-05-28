@@ -1,12 +1,10 @@
 import "dotenv/config";
 
 import { Client, Intents, Message, MessageEmbed } from "discord.js";
+import { inspect } from "node:util";
 
+import { Constants } from "./constants";
 import { words } from "./wordle";
-
-const CONSTANTS = {
-	embedColor: "#56a754"
-} as const;
 
 const client = new Client({
 	intents: Object.values(Intents.FLAGS),
@@ -22,52 +20,96 @@ client.on("ready", client => {
 	console.log(`Logged in as ${client.user.tag}!`);
 
 	function setStatus() {
-		client.user.setActivity(`-wordle`, { type: "PLAYING" });
+		client.user.setActivity(`${Constants.prefix}wordle`, {
+			type: "PLAYING"
+		});
 	}
 
 	setStatus();
 	setInterval(setStatus, 1000 * 60 * 30);
 });
 
+function getCommand(content: string) {
+	if (!content.startsWith(Constants.prefix)) return { name: "", args: [] };
+
+	const [name, ...args] = content
+		.slice(Constants.prefix.length)
+		.trim()
+		.split(/\s+/);
+
+	return { name, args };
+}
+
 client.on("messageCreate", async message => {
-	if (message.content.match(/^-wordle\b/)) {
-		await startGame(message);
-	} else if (
-		message.content.match(/^-guess\b/) &&
-		!playingUsers.has(message.author.id)
-	) {
-		await reply(message, "You're not currently in a game!");
-	} else if (
-		message.content.match(/^-quit\b/) &&
-		!playingUsers.has(message.author.id)
-	) {
-		await reply(message, "You're not currently in a game!");
+	if (message.author.bot) return;
+
+	if (!message.content.startsWith(Constants.prefix)) return;
+
+	const { name } = getCommand(message.content);
+
+	switch (name) {
+		case "wordle":
+			await startGame(message);
+			break;
+		case "guess":
+		case "quit":
+			if (!playingUsers.has(message.author.id)) {
+				await reply(message, "You're not currently in a game!");
+			}
+			break;
+		case "eval":
+			if (message.author.id !== process.env.OWNER_ID) break;
+			try {
+				const result = eval(
+					message.content.slice(
+						Constants.prefix.length + "eval ".length
+					)
+				);
+				await reply(message, `\`\`\`js\n${inspect(result)}\n\`\`\``);
+			} catch (e) {
+				await reply(message, `\`\`\`js\n${inspect(e)}\n\`\`\``);
+			}
 	}
 });
 
 async function reply(message: Message, content: string | MessageEmbed) {
 	if (typeof content === "string") {
 		await message.reply({
-			embeds: [{ color: CONSTANTS.embedColor, description: content }]
+			embeds: [{ color: Constants.embedColor, description: content }]
 		});
 	} else {
 		await message.reply({ embeds: [content] });
 	}
 }
 
+function buildRow(target: string, guess: string) {
+	let row: string[] = [];
+	let remaining = target;
+
+	for (let i = 0; i < target.length; i++) {
+		if (guess[i] === target[i]) {
+			remaining = remaining.replace(guess[i], "");
+			row.push("🟩");
+		} else {
+			row.push("⬛");
+		}
+	}
+
+	for (let i = 0; i < target.length; i++) {
+		if (remaining.includes(guess[i]) && guess[i] !== target[i]) {
+			remaining = remaining.replace(guess[i], "");
+			row[i] = "🟨";
+		}
+	}
+
+	return row.join("");
+}
+
 function buildGrid(target: string, guesses: string[], displayWords = true) {
 	let grid = "";
 
 	for (const guess of guesses) {
-		for (let i = 0; i < guess.length; i++) {
-			if (target[i] === guess[i]) {
-				grid += `🟩`;
-			} else if (target.includes(guess[i])) {
-				grid += `🟨`;
-			} else {
-				grid += `⬛`;
-			}
-		}
+		grid += buildRow(target, guess);
 
 		if (displayWords) {
 			grid += ` \`${guess}\``;
@@ -80,18 +122,16 @@ function buildGrid(target: string, guesses: string[], displayWords = true) {
 }
 
 function buildEmbed(target: string, guesses: string[], firstTime: boolean) {
-	let grid = buildGrid(target, guesses);
-
-	for (let i = 0; i < 6 - guesses.length; i++) {
-		grid += "⬛⬛⬛⬛⬛ `-----`\n";
-	}
+	const grid =
+		buildGrid(target, guesses) +
+		"⬛⬛⬛⬛⬛ `-----`\n".repeat(6 - guesses.length).trim();
 
 	return new MessageEmbed()
-		.setTitle("Wordle")
-		.setColor(CONSTANTS.embedColor)
+		.setTitle("Wordle " + target)
+		.setColor(Constants.embedColor)
 		.setDescription(
 			firstTime
-				? `Use \`-guess\` to guess a word or \`-quit\` to stop playing.\n\n${grid}`
+				? `Use \`${Constants.prefix}guess\` to guess a word or \`${Constants.prefix}quit\` to stop playing.\n\n${grid}`
 				: grid
 		);
 }
@@ -101,8 +141,7 @@ function nextGuess(message: Message) {
 		const callback = (m: Message) => {
 			if (
 				m.author.id === message.author.id &&
-				(!!m.content.match(/^-guess\b/) ||
-					!!m.content.match(/^-quit\b/))
+				["guess", "quit"].includes(getCommand(m.content).name)
 			) {
 				client.removeListener("messageCreate", callback);
 				resolve(m);
@@ -117,7 +156,7 @@ async function startGame(message: Message) {
 	if (playingUsers.has(message.author.id)) {
 		await reply(
 			message,
-			"You're already playing a game! Use `-quit` to stop playing your current game."
+			`You're already playing a game! Use \`${Constants.prefix}quit\` to stop playing your current game.`
 		);
 		return;
 	}
@@ -138,26 +177,24 @@ async function startGame(message: Message) {
 		}
 
 		const guessMessage = await nextGuess(message);
+		currentMessage = guessMessage;
 
-		if (guessMessage.content.startsWith("-quit")) {
+		const {
+			name,
+			args: [guess]
+		} = getCommand(guessMessage.content);
+
+		if (name === "quit") {
 			playingUsers.delete(message.author.id);
 			await reply(message, "Stopped the current game.");
 			return;
 		}
 
-		currentMessage = guessMessage;
-		const match = guessMessage.content.match(/^-guess\s+(.{5})$/);
-
-		if (!match) {
-			await reply(guessMessage, "Invalid guess!");
-			continue;
-		}
-
-		const guess = match[1];
-
 		if (
-			!words.answers.includes(guess) &&
-			!words.dictionary.includes(guess)
+			!guess ||
+			guess.length !== 5 ||
+			(!words.answers.includes(guess) &&
+				!words.dictionary.includes(guess))
 		) {
 			await reply(guessMessage, "Invalid guess!");
 			continue;
