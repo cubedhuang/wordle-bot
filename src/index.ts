@@ -13,6 +13,13 @@ import { Constants } from "./constants";
 import { buildImage } from "./image";
 import { words } from "./wordle";
 
+process.on("uncaughtException", err => {
+	console.error("Uncaught", err);
+});
+process.on("unhandledRejection", err => {
+	console.error("Unhandled", err);
+});
+
 const client = new Client({
 	intents: Object.values(Intents.FLAGS),
 	allowedMentions: {
