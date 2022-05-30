@@ -44,14 +44,20 @@ client.on("ready", client => {
 });
 
 function getCommand(content: string) {
-	if (!content.startsWith(Constants.prefix)) return { name: "", args: [] };
+	if (!content.startsWith(Constants.prefix))
+		return { name: "", raw: "", args: [] };
 
-	const [name, ...args] = content
-		.slice(Constants.prefix.length)
-		.trim()
-		.split(/\s+/);
+	const sliced = content.slice(Constants.prefix.length).trim();
+	const [name] = sliced.split(/\s+/, 1);
+	const raw = sliced.slice(name.length).trim();
 
-	return { name, args };
+	return {
+		name,
+		raw,
+		get args() {
+			return raw.split(/\s+/);
+		}
+	};
 }
 
 const helpEmbed = new MessageEmbed()
@@ -91,7 +97,7 @@ client.on("messageCreate", async message => {
 
 	if (!message.content.startsWith(Constants.prefix)) return;
 
-	const { name } = getCommand(message.content);
+	const { name, raw } = getCommand(message.content);
 
 	switch (name) {
 		case "help":
@@ -112,11 +118,7 @@ client.on("messageCreate", async message => {
 		case "eval":
 			if (message.author.id !== process.env.OWNER_ID) break;
 			try {
-				const result = eval(
-					message.content.slice(
-						Constants.prefix.length + "eval ".length
-					)
-				);
+				const result = eval(raw);
 				await reply(message, `\`\`\`js\n${inspect(result)}\n\`\`\``);
 			} catch (e) {
 				await reply(message, `\`\`\`js\n${inspect(e)}\n\`\`\``);
