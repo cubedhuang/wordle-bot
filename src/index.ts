@@ -11,7 +11,7 @@ import { inspect } from "node:util";
 
 import { Constants } from "./constants";
 import { buildImage } from "./image";
-import { words } from "./wordle";
+import { getRandomWordleAnswer, isWordleWord } from "./wordle";
 
 process.on("uncaughtException", err => {
 	console.error("Uncaught", err);
@@ -209,8 +209,7 @@ async function startGame(message: Message) {
 
 	playingUsers.add(message.author.id);
 
-	const target =
-		words.answers[Math.floor(Math.random() * words.answers.length)];
+	const target = getRandomWordleAnswer();
 	const guesses: string[] = [];
 	let currentMessage = message;
 	let repeatEmbed = true;
@@ -243,17 +242,12 @@ async function startGame(message: Message) {
 			return;
 		}
 
-		if (
-			!guess ||
-			guess.length !== 5 ||
-			(!words.answers.includes(guess) &&
-				!words.dictionary.includes(guess))
-		) {
+		if (!guess || !isWordleWord(guess)) {
 			await reply(guessMessage, "Invalid guess!");
 			continue;
 		}
 
-		guesses.push(guess);
+		guesses.push(guess.toLowerCase());
 		repeatEmbed = true;
 	}
 
