@@ -173,20 +173,8 @@ function buildRow(target: string, guess: string) {
 	return row.join("");
 }
 
-function buildGrid(target: string, guesses: string[], displayWords = true) {
-	let grid = "";
-
-	for (const guess of guesses) {
-		grid += buildRow(target, guess);
-
-		if (displayWords) {
-			grid += ` \`${guess}\``;
-		}
-
-		grid += `\n`;
-	}
-
-	return grid;
+function buildGrid(target: string, guesses: string[]) {
+	return guesses.map(guess => buildRow(target, guess)).join("\n");
 }
 
 function buildEmbed(firstTime: boolean) {
@@ -235,6 +223,8 @@ async function startGame(message: Message) {
 	let currentMessage = message;
 	let repeatEmbed = true;
 
+	console.log(`A user started. | ${playingUsers.size} playing.`);
+
 	while (guesses.length < 6 && guesses.at(-1) !== target) {
 		if (repeatEmbed) {
 			const embed = buildEmbed(guesses.length === 0);
@@ -260,6 +250,9 @@ async function startGame(message: Message) {
 				message,
 				`Stopped the current game. The word was **${target}**.`
 			);
+
+			console.log(`A user quit.    | ${playingUsers.size} playing.`);
+
 			return;
 		}
 
@@ -294,7 +287,7 @@ The word was **${target}**.
 
 Wordle Bot ${didWin ? guesses.length : "X"}/6
 
-${buildGrid(target, guesses, false)}
+${buildGrid(target, guesses)}
 `.trim()
 		)
 		.setImage("attachment://wordle.png");
@@ -304,6 +297,12 @@ ${buildGrid(target, guesses, false)}
 	);
 
 	await reply(message, embed, image);
+
+	console.log(
+		`A user had ${didWin ? guesses.length : "X"}/6. | ${
+			playingUsers.size
+		} users playing.`
+	);
 }
 
 await client.login(process.env.TOKEN);
