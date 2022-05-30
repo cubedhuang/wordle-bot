@@ -255,7 +255,7 @@ async function startGame(message: Message) {
 			playingUsers.delete(message.author.id);
 			await reply(
 				message,
-				`Stopped the current game. The word was ${target}.`
+				`Stopped the current game. The word was **${target}**.`
 			);
 			return;
 		}
@@ -287,7 +287,7 @@ async function startGame(message: Message) {
 		.setTitle(didWin ? "You won!" : "You lost...")
 		.setDescription(
 			`
-The word was ${target}.
+The word was **${target}**.
 
 Wordle Bot ${didWin ? guesses.length : "X"}/6
 
