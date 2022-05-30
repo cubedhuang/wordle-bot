@@ -301,7 +301,7 @@ ${buildGrid(target, guesses)}
 	console.log(
 		`A user had ${didWin ? guesses.length : "X"}/6. | ${
 			playingUsers.size
-		} users playing.`
+		} playing.`
 	);
 }
 
