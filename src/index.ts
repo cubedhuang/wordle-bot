@@ -150,7 +150,7 @@ async function reply(
 }
 
 function buildRow(target: string, guess: string) {
-	let row: string[] = [];
+	const row: string[] = [];
 	let remaining = target;
 
 	for (let i = 0; i < target.length; i++) {
