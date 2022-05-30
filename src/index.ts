@@ -80,7 +80,7 @@ const rulesEmbed = new MessageEmbed().setTitle("How to Play").setDescription(
 	`
 Guess the **Wordle** in six tries! The word will be randomly chosen from the offical Wordle answer list at the start of each game.
 
-Each guess must be a valid five-letter word. Use \`-guess\` to submit.
+Each guess must be a valid five-letter word. Use \`${Constants.prefix}guess\` to submit.
 
 After each guess, the color of the tiles will show how close your guess was to the word.
 
