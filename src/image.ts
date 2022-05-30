@@ -1,5 +1,7 @@
 import { Canvas } from "@napi-rs/canvas";
 
+import { range } from "./util";
+
 const GREEN = "#5c8d4d";
 const YELLOW = "#b19f3b";
 const GRAY = "#3a3a3c";
@@ -13,8 +15,8 @@ const keys = [
 ];
 
 const keyIndices: Record<string, [number, number]> = {};
-for (let i = 0; i < keys.length; i++) {
-	for (let j = 0; j < keys[i].length; j++) {
+for (const i of range(keys.length)) {
+	for (const j of range(keys[i].length)) {
 		keyIndices[keys[i][j]] = [i, j];
 	}
 }
@@ -33,12 +35,12 @@ export function buildImage(target: string, guesses: string[]) {
 
 	const keyColors = keys.map(row => row.map(_ => LIGHT_GRAY));
 
-	for (let i = 0; i < guesses.length; i++) {
+	for (const i of range(guesses.length)) {
 		const guess = guesses[i];
 		const row: string[] = [];
 		let remaining = target;
 
-		for (let j = 0; j < target.length; j++) {
+		for (const j of range(target.length)) {
 			if (guess[j] === target[j]) {
 				remaining = remaining.replace(guess[j], "");
 				row.push(GREEN);
@@ -55,7 +57,7 @@ export function buildImage(target: string, guesses: string[]) {
 			}
 		}
 
-		for (let j = 0; j < target.length; j++) {
+		for (const j of range(target.length)) {
 			if (remaining.includes(guess[j]) && guess[j] !== target[j]) {
 				remaining = remaining.replace(guess[j], "");
 				row[j] = YELLOW;
@@ -67,12 +69,12 @@ export function buildImage(target: string, guesses: string[]) {
 			}
 		}
 
-		for (let j = 0; j < guesses[i].length; j++) {
+		for (const j of range(guess.length)) {
 			ctx.fillStyle = row[j];
 			ctx.fillRect(j * 67 + 10, i * 67 + 10, 62, 62);
 			ctx.fillStyle = "white";
 			ctx.fillText(
-				guesses[i][j].toUpperCase(),
+				guess[j].toUpperCase(),
 				j * 67 + 10 + 62 / 2,
 				i * 67 + 10 + 62 / 2
 			);
@@ -82,18 +84,18 @@ export function buildImage(target: string, guesses: string[]) {
 	ctx.strokeStyle = "#3a3a3c";
 	ctx.lineWidth = 2;
 
-	for (let i = guesses.length; i < 6; i++) {
-		for (let j = 0; j < 5; j++) {
+	for (const i of range(guesses.length, 6)) {
+		for (const j of range(5)) {
 			ctx.strokeRect(j * 67 + 10 + 1, i * 67 + 10 + 1, 62 - 1, 62 - 1);
 		}
 	}
 
 	ctx.font = "bold 18px Calibri";
 
-	for (let i = 0; i < keys.length; i++) {
+	for (const i of range(keys.length)) {
 		const startX = i === 0 ? 5 : i === 1 ? 20 : 55;
 		const startY = 410;
-		for (let j = 0; j < keys[i].length; j++) {
+		for (const j of range(keys[i].length)) {
 			ctx.fillStyle = keyColors[i][j];
 			roundRect(startX + j * 32 + 10, startY + i * 45 + 10, 30, 40, 5);
 			ctx.fillStyle = "white";

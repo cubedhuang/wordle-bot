@@ -11,6 +11,7 @@ import { inspect } from "node:util";
 
 import { Constants } from "./constants";
 import { buildImage } from "./image";
+import { range } from "./util";
 import { getRandomWordleAnswer, isWordleWord } from "./wordle";
 
 process.on("uncaughtException", err => {
@@ -153,7 +154,7 @@ function buildRow(target: string, guess: string) {
 	const row: string[] = [];
 	let remaining = target;
 
-	for (let i = 0; i < target.length; i++) {
+	for (const i of range(target.length)) {
 		if (guess[i] === target[i]) {
 			remaining = remaining.replace(guess[i], "");
 			row.push("🟩");
@@ -162,7 +163,7 @@ function buildRow(target: string, guess: string) {
 		}
 	}
 
-	for (let i = 0; i < target.length; i++) {
+	for (const i of range(target.length)) {
 		if (remaining.includes(guess[i]) && guess[i] !== target[i]) {
 			remaining = remaining.replace(guess[i], "");
 			row[i] = "🟨";
