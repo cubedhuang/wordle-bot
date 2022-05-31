@@ -4,7 +4,7 @@ import {
 	Client,
 	CommandInteraction,
 	Interaction,
-	Message,
+	InteractionReplyOptions,
 	MessageAttachment,
 	MessageEmbed
 } from "discord.js";
@@ -85,12 +85,17 @@ client.on("messageCreate", async message => {
 
 	const code = message.content.slice(5);
 
+	let result: string;
 	try {
-		const result = eval(code);
-		await reply(message, `\`\`\`js\n${inspect(result)}\n\`\`\``);
+		result = inspect(eval(code));
 	} catch (e) {
-		await reply(message, `\`\`\`js\n${inspect(e)}\n\`\`\``);
+		result = inspect(e);
 	}
+	result = `\`\`\`js\n${result.slice(0, 2000)}\n\`\`\``;
+
+	await message.reply({
+		embeds: [{ description: result }]
+	});
 });
 
 client.on("interactionCreate", async i => {
@@ -119,27 +124,19 @@ client.on("interactionCreate", async i => {
 });
 
 async function reply(
-	receiver: Message | CommandInteraction,
-	content: string
-): Promise<Message>;
-async function reply(
-	receiver: Message | CommandInteraction,
-	embed: MessageEmbed,
-	file?: MessageAttachment
-): Promise<Message>;
-async function reply(
-	receiver: Message | CommandInteraction,
+	i: CommandInteraction,
 	content: string | MessageEmbed,
-	file?: MessageAttachment
+	options?: InteractionReplyOptions
 ) {
 	if (typeof content === "string") {
-		return await receiver.reply({
-			embeds: [{ color: Constants.embedColor, description: content }]
+		return await i.reply({
+			embeds: [{ color: Constants.embedColor, description: content }],
+			...options
 		});
 	} else {
-		return await receiver.reply({
+		return await i.reply({
 			embeds: [content.setColor(Constants.embedColor)],
-			files: file ? [file] : undefined
+			...options
 		});
 	}
 }
@@ -223,11 +220,14 @@ async function startGame(i: CommandInteraction) {
 	while (guesses.length < 6 && guesses.at(-1) !== target) {
 		if (repeatEmbed) {
 			const embed = buildEmbed(guesses.length === 0);
-			await reply(
-				currentI,
-				embed,
-				new MessageAttachment(buildImage(target, guesses), "wordle.png")
-			);
+			await reply(currentI, embed, {
+				files: [
+					new MessageAttachment(
+						buildImage(target, guesses),
+						"wordle.png"
+					)
+				]
+			});
 			repeatEmbed = false;
 		}
 
@@ -248,12 +248,16 @@ async function startGame(i: CommandInteraction) {
 		const guess = guessI.options.getString("guess", true);
 
 		if (guess.length !== 5) {
-			await reply(guessI, "Guesses must be 5 letters long!");
+			await reply(guessI, "Guesses must be 5 letters long!", {
+				ephemeral: true
+			});
 			continue;
 		}
 
 		if (!isWordleWord(guess)) {
-			await reply(guessI, "That's not a valid Wordle word!");
+			await reply(guessI, "That's not a valid Wordle word!", {
+				ephemeral: true
+			});
 			continue;
 		}
 
@@ -280,12 +284,12 @@ ${buildGrid(target, guesses)}
 `.trim()
 		)
 		.setImage("attachment://wordle.png");
-	const image = new MessageAttachment(
-		buildImage(target, guesses),
-		"wordle.png"
-	);
 
-	await reply(currentI, embed, image);
+	await reply(currentI, embed, {
+		files: [
+			new MessageAttachment(buildImage(target, guesses), "wordle.png")
+		]
+	});
 
 	console.log(
 		`User had ${didWin ? guesses.length : "X"}/6. | ${
