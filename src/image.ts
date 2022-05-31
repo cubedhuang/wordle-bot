@@ -8,6 +8,8 @@ const GRAY = "#3a3a3c";
 const DARK_GRAY = "#121213";
 const LIGHT_GRAY = "#818384";
 
+const FONT_FAMILY = "'DejaVu Sans'";
+
 const keys = [
 	["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
 	["a", "s", "d", "f", "g", "h", "j", "k", "l"],
@@ -31,7 +33,7 @@ export function buildImage(target: string, guesses: string[]) {
 	ctx.fillStyle = DARK_GRAY;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-	ctx.font = "bold 32px Ubuntu";
+	ctx.font = `bold 32px ${FONT_FAMILY}`;
 
 	const keyColors = keys.map(row => row.map(_ => LIGHT_GRAY));
 
@@ -90,7 +92,7 @@ export function buildImage(target: string, guesses: string[]) {
 		}
 	}
 
-	ctx.font = "bold 18px Calibri";
+	ctx.font = `bold 18px ${FONT_FAMILY}`;
 
 	for (const i of range(keys.length)) {
 		const startX = i === 0 ? 5 : i === 1 ? 20 : 55;
