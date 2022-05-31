@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import { PrismaClient } from "@prisma/client";
 import {
 	Client,
 	CommandInteraction,
@@ -21,6 +22,8 @@ process.on("uncaughtException", err => {
 process.on("unhandledRejection", err => {
 	console.error("Unhandled", err);
 });
+
+const prisma = new PrismaClient();
 
 const client = new Client({
 	intents: ["DIRECT_MESSAGES", "GUILDS", "GUILD_MESSAGES"],
@@ -210,6 +213,12 @@ async function startGame(i: CommandInteraction) {
 
 	playingUsers.add(i.user.id);
 
+	await prisma.user.upsert({
+		where: { userId: i.user.id },
+		create: { userId: i.user.id, started: 1 },
+		update: { started: { increment: 1 } }
+	});
+
 	const target = getRandomWordleAnswer();
 	const guesses: string[] = [];
 	let currentI = i;
@@ -240,8 +249,12 @@ async function startGame(i: CommandInteraction) {
 				`Stopped the current game. The word was **${target}**.`
 			);
 
-			console.log(`User quit.    | ${playingUsers.size} playing.`);
+			await prisma.user.update({
+				where: { userId: i.user.id },
+				data: { quits: { increment: 1 } }
+			});
 
+			console.log(`User quit.    | ${playingUsers.size} playing.`);
 			return;
 		}
 
@@ -290,6 +303,27 @@ ${buildGrid(target, guesses)}
 			new MessageAttachment(buildImage(target, guesses), "wordle.png")
 		]
 	});
+
+	if (didWin) {
+		const user = await prisma.user.findUnique({
+			where: { userId: i.user.id }
+		});
+
+		await prisma.user.update({
+			where: { userId: i.user.id },
+			data: {
+				wins: { increment: 1 },
+				[`wins${guesses.length}` as "wins1"]: { increment: 1 },
+				streak: { increment: 1 },
+				maxStreak: Math.max(user!.maxStreak, user!.streak)
+			}
+		});
+	} else {
+		await prisma.user.update({
+			where: { userId: i.user.id },
+			data: { losses: { increment: 1 }, streak: 0 }
+		});
+	}
 
 	console.log(
 		`User had ${didWin ? guesses.length : "X"}/6. | ${

@@ -1,0 +1,27 @@
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+    provider             = "mysql"
+    url                  = env("DATABASE_URL")
+    referentialIntegrity = "prisma"
+}
+
+model User {
+    id        Int    @id @default(autoincrement())
+    userId    String @unique
+    started   Int    @default(0)
+    wins      Int    @default(0)
+    wins1     Int    @default(0)
+    wins2     Int    @default(0)
+    wins3     Int    @default(0)
+    wins4     Int    @default(0)
+    wins5     Int    @default(0)
+    wins6     Int    @default(0)
+    quits     Int    @default(0)
+    losses    Int    @default(0)
+    streak    Int    @default(0)
+    maxStreak Int    @default(0)
+}
