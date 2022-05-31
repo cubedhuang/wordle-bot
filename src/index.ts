@@ -1,12 +1,6 @@
 import "dotenv/config";
 
-import {
-	Client,
-	Intents,
-	Message,
-	MessageAttachment,
-	MessageEmbed
-} from "discord.js";
+import { Client, Message, MessageAttachment, MessageEmbed } from "discord.js";
 import { inspect } from "node:util";
 
 import { Constants } from "./constants";
@@ -22,7 +16,7 @@ process.on("unhandledRejection", err => {
 });
 
 const client = new Client({
-	intents: Object.values(Intents.FLAGS),
+	intents: ["DIRECT_MESSAGES", "GUILDS", "GUILD_MESSAGES"],
 	allowedMentions: {
 		parse: ["users", "roles"],
 		repliedUser: false
@@ -305,4 +299,6 @@ ${buildGrid(target, guesses)}
 	);
 }
 
-await client.login(process.env.TOKEN);
+await client.login(
+	process.argv.includes("dev") ? process.env.TOKEN_DEV : process.env.TOKEN
+);
