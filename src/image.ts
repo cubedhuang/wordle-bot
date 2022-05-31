@@ -81,7 +81,7 @@ export function buildImage(target: string, guesses: string[]) {
 		}
 	}
 
-	ctx.strokeStyle = "#3a3a3c";
+	ctx.strokeStyle = GRAY;
 	ctx.lineWidth = 2;
 
 	for (const i of range(guesses.length, 6)) {
