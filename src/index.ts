@@ -133,12 +133,12 @@ async function reply(
 ) {
 	if (typeof content === "string") {
 		return await i.reply({
-			embeds: [{ color: Constants.embedColor, description: content }],
+			embeds: [{ color: "#56a754", description: content }],
 			...options
 		});
 	} else {
 		return await i.reply({
-			embeds: [content.setColor(Constants.embedColor)],
+			embeds: [content.setColor("#56a754")],
 			...options
 		});
 	}
