@@ -6,7 +6,9 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
-		"start": "tsc && node --no-warnings --es-module-specifier-resolution=node ./build/src/index.js"
+		"start": "node --no-warnings --es-module-specifier-resolution=node ./build/src/index.js",
+		"build": "tsc",
+		"dev": "yarn build && yarn start"
 	},
 	"dependencies": {
 		"@napi-rs/canvas": "^0.1.21",
