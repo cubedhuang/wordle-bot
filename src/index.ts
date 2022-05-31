@@ -217,7 +217,7 @@ async function startGame(message: Message) {
 	let currentMessage = message;
 	let repeatEmbed = true;
 
-	console.log(`A user started. | ${playingUsers.size} playing.`);
+	console.log(`User started. | ${playingUsers.size} playing.`);
 
 	while (guesses.length < 6 && guesses.at(-1) !== target) {
 		if (repeatEmbed) {
@@ -245,7 +245,7 @@ async function startGame(message: Message) {
 				`Stopped the current game. The word was **${target}**.`
 			);
 
-			console.log(`A user quit.    | ${playingUsers.size} playing.`);
+			console.log(`User quit.    | ${playingUsers.size} playing.`);
 
 			return;
 		}
@@ -293,7 +293,7 @@ ${buildGrid(target, guesses)}
 	await reply(message, embed, image);
 
 	console.log(
-		`A user had ${didWin ? guesses.length : "X"}/6. | ${
+		`User had ${didWin ? guesses.length : "X"}/6. | ${
 			playingUsers.size
 		} playing.`
 	);
