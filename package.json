@@ -8,9 +8,13 @@
 	"scripts": {
 		"start": "node --no-warnings --es-module-specifier-resolution=node ./build/src/index.js",
 		"build": "tsc",
-		"dev": "yarn build && yarn start -- dev"
+		"dev": "yarn build && yarn start -- dev",
+		"register": "yarn build && node --no-warnings --es-module-specifier-resolution=node ./build/register/index.js",
+		"register-dev": "yarn build && node --no-warnings --es-module-specifier-resolution=node ./build/register/index.js -- dev"
 	},
 	"dependencies": {
+		"@discordjs/builders": "^0.13.0",
+		"@discordjs/rest": "^0.4.1",
 		"@napi-rs/canvas": "^0.1.21",
 		"discord.js": "^13.7.0",
 		"dotenv": "^16.0.1"

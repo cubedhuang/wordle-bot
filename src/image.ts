@@ -31,7 +31,7 @@ export function buildImage(target: string, guesses: string[]) {
 	ctx.fillStyle = DARK_GRAY;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-	ctx.font = "bold 32px Calibri";
+	ctx.font = "bold 32px Ubuntu";
 
 	const keyColors = keys.map(row => row.map(_ => LIGHT_GRAY));
 

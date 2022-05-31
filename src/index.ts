@@ -1,6 +1,13 @@
 import "dotenv/config";
 
-import { Client, Message, MessageAttachment, MessageEmbed } from "discord.js";
+import {
+	Client,
+	CommandInteraction,
+	Interaction,
+	Message,
+	MessageAttachment,
+	MessageEmbed
+} from "discord.js";
 import { inspect } from "node:util";
 
 import { Constants } from "./constants";
@@ -29,31 +36,12 @@ client.on("ready", client => {
 	console.log(`Logged in as ${client.user.tag}!`);
 
 	function setStatus() {
-		client.user.setActivity(`${Constants.prefix}wordle`, {
-			type: "PLAYING"
-		});
+		client.user.setActivity("/wordle", { type: "PLAYING" });
 	}
 
 	setStatus();
 	setInterval(setStatus, 1000 * 60 * 30);
 });
-
-function getCommand(content: string) {
-	if (!content.startsWith(Constants.prefix))
-		return { name: "", raw: "", args: [] };
-
-	const sliced = content.slice(Constants.prefix.length).trim();
-	const [name] = sliced.split(/\s+/, 1);
-	const raw = sliced.slice(name.length).trim();
-
-	return {
-		name,
-		raw,
-		get args() {
-			return raw.split(/\s+/);
-		}
-	};
-}
 
 const helpEmbed = new MessageEmbed()
 	.setTitle("Wordle Bot")
@@ -63,11 +51,11 @@ const helpEmbed = new MessageEmbed()
 	.addField(
 		"Commands",
 		`
-\`${Constants.prefix}help\`: Shows this message.
-\`${Constants.prefix}rules\`: Sends the rules of the game.
-\`${Constants.prefix}wordle\`: Start a game of Wordle! Wordle games are currently per-user, and multiple people can play a game in a channel at once.
-\`${Constants.prefix}guess\`: Guess a word in your current Wordle game.
-\`${Constants.prefix}quit\`: Stop your current Wordle game.
+\`/help\`: Shows this message.
+\`/rules\`: Sends the rules of the game.
+\`/wordle\`: Start a game of Wordle! Wordle games are currently per-user, and multiple people can play a game in a channel at once.
+\`/guess\`: Guess a word in your current Wordle game.
+\`/quit\`: Stop your current Wordle game.
 `.trim()
 	);
 
@@ -75,7 +63,7 @@ const rulesEmbed = new MessageEmbed().setTitle("How to Play").setDescription(
 	`
 Guess the **Wordle** in six tries! The word will be randomly chosen from the offical Wordle answer list at the start of each game.
 
-Each guess must be a valid five-letter word. Use \`${Constants.prefix}guess\` to submit.
+Each guess must be a valid five-letter word. Use \`/guess\` to submit.
 
 After each guess, the color of the tiles will show how close your guess was to the word.
 
@@ -88,56 +76,68 @@ If a letter appears more than once in the guess but only once in the word, only 
 );
 
 client.on("messageCreate", async message => {
-	if (message.author.bot) return;
+	if (
+		message.author.id !== process.env.OWNER_ID ||
+		!message.content.startsWith("-eval")
+	) {
+		return;
+	}
 
-	if (!message.content.startsWith(Constants.prefix)) return;
+	const code = message.content.slice(5);
 
-	const { name, raw } = getCommand(message.content);
-
-	switch (name) {
-		case "help":
-			await reply(message, helpEmbed);
-			break;
-		case "rules":
-			await reply(message, rulesEmbed);
-			break;
-		case "wordle":
-			await startGame(message);
-			break;
-		case "guess":
-		case "quit":
-			if (!playingUsers.has(message.author.id)) {
-				await reply(message, "You're not currently in a game!");
-			}
-			break;
-		case "eval":
-			if (message.author.id !== process.env.OWNER_ID) break;
-			try {
-				const result = eval(raw);
-				await reply(message, `\`\`\`js\n${inspect(result)}\n\`\`\``);
-			} catch (e) {
-				await reply(message, `\`\`\`js\n${inspect(e)}\n\`\`\``);
-			}
+	try {
+		const result = eval(code);
+		await reply(message, `\`\`\`js\n${inspect(result)}\n\`\`\``);
+	} catch (e) {
+		await reply(message, `\`\`\`js\n${inspect(e)}\n\`\`\``);
 	}
 });
 
-async function reply(message: Message, content: string): Promise<Message>;
+client.on("interactionCreate", async i => {
+	if (!i.isCommand()) return;
+
+	switch (i.commandName) {
+		case "help":
+			await reply(i, helpEmbed);
+			break;
+		case "rules":
+			await reply(i, rulesEmbed);
+			break;
+		case "wordle":
+			await startGame(i);
+			break;
+		case "guess":
+		case "quit":
+			if (!playingUsers.has(i.user.id)) {
+				await reply(
+					i,
+					"You're not currently in a game! Use `/wordle` to start one."
+				);
+			}
+			break;
+	}
+});
+
 async function reply(
-	message: Message,
+	receiver: Message | CommandInteraction,
+	content: string
+): Promise<Message>;
+async function reply(
+	receiver: Message | CommandInteraction,
 	embed: MessageEmbed,
 	file?: MessageAttachment
 ): Promise<Message>;
 async function reply(
-	message: Message,
+	receiver: Message | CommandInteraction,
 	content: string | MessageEmbed,
 	file?: MessageAttachment
 ) {
 	if (typeof content === "string") {
-		return await message.reply({
+		return await receiver.reply({
 			embeds: [{ color: Constants.embedColor, description: content }]
 		});
 	} else {
-		return await message.reply({
+		return await receiver.reply({
 			embeds: [content.setColor(Constants.embedColor)],
 			files: file ? [file] : undefined
 		});
@@ -178,43 +178,44 @@ function buildEmbed(firstTime: boolean) {
 
 	if (firstTime) {
 		embed.setDescription(
-			`Use \`${Constants.prefix}guess\` to guess a word or \`${Constants.prefix}quit\` to stop playing.`
+			"Use `/guess` to guess a word or `/quit` to stop playing."
 		);
 	}
 
 	return embed;
 }
 
-function nextGuess(message: Message) {
-	return new Promise<Message>(resolve => {
-		const callback = (m: Message) => {
+function nextGuess(userId: string) {
+	return new Promise<CommandInteraction>(resolve => {
+		const callback = (i: Interaction) => {
 			if (
-				m.author.id === message.author.id &&
-				["guess", "quit"].includes(getCommand(m.content).name)
+				i.isCommand() &&
+				i.user.id === userId &&
+				["guess", "quit"].includes(i.commandName)
 			) {
 				client.removeListener("messageCreate", callback);
-				resolve(m);
+				resolve(i);
 			}
 		};
 
-		client.on("messageCreate", callback);
+		client.on("interactionCreate", callback);
 	});
 }
 
-async function startGame(message: Message) {
-	if (playingUsers.has(message.author.id)) {
+async function startGame(i: CommandInteraction) {
+	if (playingUsers.has(i.user.id)) {
 		await reply(
-			message,
-			`You're already playing a game! Use \`${Constants.prefix}quit\` to stop playing your current game.`
+			i,
+			"You're already playing a game! Use `/quit` to stop playing your current game."
 		);
 		return;
 	}
 
-	playingUsers.add(message.author.id);
+	playingUsers.add(i.user.id);
 
 	const target = getRandomWordleAnswer();
 	const guesses: string[] = [];
-	let currentMessage = message;
+	let currentI = i;
 	let repeatEmbed = true;
 
 	console.log(`User started. | ${playingUsers.size} playing.`);
@@ -223,25 +224,20 @@ async function startGame(message: Message) {
 		if (repeatEmbed) {
 			const embed = buildEmbed(guesses.length === 0);
 			await reply(
-				currentMessage,
+				currentI,
 				embed,
 				new MessageAttachment(buildImage(target, guesses), "wordle.png")
 			);
 			repeatEmbed = false;
 		}
 
-		const guessMessage = await nextGuess(message);
-		currentMessage = guessMessage;
+		const guessI = await nextGuess(i.user.id);
+		currentI = guessI;
 
-		const {
-			name,
-			args: [guess]
-		} = getCommand(guessMessage.content);
-
-		if (name === "quit") {
-			playingUsers.delete(message.author.id);
+		if (guessI.commandName === "quit") {
+			playingUsers.delete(i.user.id);
 			await reply(
-				message,
+				guessI,
 				`Stopped the current game. The word was **${target}**.`
 			);
 
@@ -250,18 +246,15 @@ async function startGame(message: Message) {
 			return;
 		}
 
-		if (!guess) {
-			await reply(guessMessage, "Enter a word to guess!");
-			continue;
-		}
+		const guess = guessI.options.getString("guess", true);
 
 		if (guess.length !== 5) {
-			await reply(guessMessage, "Guesses must be 5 letters long!");
+			await reply(guessI, "Guesses must be 5 letters long!");
 			continue;
 		}
 
 		if (!isWordleWord(guess)) {
-			await reply(guessMessage, "That's not a valid Wordle word!");
+			await reply(guessI, "That's not a valid Wordle word!");
 			continue;
 		}
 
@@ -269,7 +262,7 @@ async function startGame(message: Message) {
 		repeatEmbed = true;
 	}
 
-	playingUsers.delete(message.author.id);
+	playingUsers.delete(i.user.id);
 
 	const didWin = guesses.at(-1) === target;
 
@@ -290,7 +283,7 @@ ${buildGrid(target, guesses)}
 		"wordle.png"
 	);
 
-	await reply(message, embed, image);
+	await reply(currentI, embed, image);
 
 	console.log(
 		`User had ${didWin ? guesses.length : "X"}/6. | ${
