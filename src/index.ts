@@ -232,7 +232,6 @@ async function startGame(i: CommandInteraction) {
 		}
 
 		const guessI = await nextGuess(i.user.id);
-		currentI = guessI;
 
 		if (guessI.commandName === "quit") {
 			playingUsers.delete(i.user.id);
@@ -257,6 +256,9 @@ async function startGame(i: CommandInteraction) {
 			await reply(guessI, "That's not a valid Wordle word!");
 			continue;
 		}
+
+		currentI.deleteReply();
+		currentI = guessI;
 
 		guesses.push(guess.toLowerCase());
 		repeatEmbed = true;
