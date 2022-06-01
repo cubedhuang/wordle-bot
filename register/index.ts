@@ -40,6 +40,11 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName("stats")
 		.setDescription("Display statistics about your past games.")
+		.addUserOption(option =>
+			option
+				.setName("user")
+				.setDescription("The user to display statistics for.")
+		)
 ];
 
 const rest = new REST().setToken(token!);

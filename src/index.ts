@@ -335,30 +335,46 @@ ${buildGrid(target, guesses)}
 }
 
 async function sendStats(i: CommandInteraction) {
-	const user = await prisma.user.findUnique({
-		where: { userId: i.user.id }
+	const targetUser = i.options.getUser("user") ?? i.user;
+
+	const data = await prisma.user.findUnique({
+		where: { userId: targetUser.id }
 	});
 
-	if (!user) {
-		await reply(i, "You haven't played any games yet!", {
-			ephemeral: true
-		});
+	if (!data) {
+		await reply(
+			i,
+			`${
+				targetUser.id === i.user.id
+					? "You haven't"
+					: `${targetUser} hasn't`
+			} played a game yet!`,
+			{
+				ephemeral: true
+			}
+		);
 		return;
 	}
 
 	const embed = new MessageEmbed()
-		.setTitle("Wordle Stats")
+		.setTitle(
+			`${
+				targetUser.id === i.user.id
+					? "Your"
+					: `${targetUser.username}'s`
+			} Wordle Statistics`
+		)
 		.setImage("attachment://stats.png");
 
 	const image = buildStatsImage({
-		...user,
+		...data,
 		dist: [
-			user.wins1,
-			user.wins2,
-			user.wins3,
-			user.wins4,
-			user.wins5,
-			user.wins6
+			data.wins1,
+			data.wins2,
+			data.wins3,
+			data.wins4,
+			data.wins5,
+			data.wins6
 		]
 	});
 
