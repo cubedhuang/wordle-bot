@@ -252,7 +252,7 @@ async function startGame(i: CommandInteraction) {
 
 			await prisma.user.update({
 				where: { userId: i.user.id },
-				data: { quits: { increment: 1 } }
+				data: { quits: { increment: 1 }, streak: 0 }
 			});
 
 			console.log(`User quit.    | ${playingUsers.size} playing.`);
