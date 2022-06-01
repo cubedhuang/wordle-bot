@@ -41,7 +41,7 @@ export function buildStatsImage(data: BuildStatsData) {
 	renderStat(data.maxStreak, "Max\nStreak", canvas.width / 2 + statOffset);
 
 	ctx.font = `bold 16px ${FONT_FAMILY}`;
-	ctx.fillText("GUESS DISTRIBUTION", canvas.width / 2, 120);
+	ctx.fillText("GUESS DISTRIBUTION", canvas.width / 2, 115);
 
 	// Distance from edge of bars to the vertical center.
 	const barOffset = 200;
@@ -66,7 +66,7 @@ export function buildStatsImage(data: BuildStatsData) {
 		ctx.fillStyle = "white";
 		ctx.textAlign = "left";
 		ctx.font = `normal 14px ${FONT_FAMILY}`;
-		ctx.fillText(`${i + 1}`, canvas.width / 2 - barOffset, y + 4);
+		ctx.fillText(`${i + 1}`, canvas.width / 2 - barOffset, y + 2);
 
 		ctx.textAlign = "right";
 		ctx.font = `bold 14px ${FONT_FAMILY}`;
@@ -80,7 +80,7 @@ export function buildStatsImage(data: BuildStatsData) {
 					10,
 				canvas.width / 2 - barOffset + labelSpace + 20
 			),
-			y + 4
+			y + 2
 		);
 	}
 
