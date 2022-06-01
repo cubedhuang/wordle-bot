@@ -339,7 +339,9 @@ async function sendStats(i: CommandInteraction) {
 	});
 
 	if (!user) {
-		await reply(i, "You haven't played any games yet!");
+		await reply(i, "You haven't played any games yet!", {
+			ephemeral: true
+		});
 		return;
 	}
 
