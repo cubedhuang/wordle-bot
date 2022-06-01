@@ -11,8 +11,7 @@ import {
 } from "discord.js";
 import { inspect } from "node:util";
 
-import { Constants } from "./constants";
-import { buildImage } from "./image";
+import { buildGameImage, buildStatsImage } from "./image";
 import { range } from "./util";
 import { getRandomWordleAnswer, isWordleWord } from "./wordle";
 
@@ -123,6 +122,8 @@ client.on("interactionCreate", async i => {
 				);
 			}
 			break;
+		case "stats":
+			await sendStats(i);
 	}
 });
 
@@ -232,7 +233,7 @@ async function startGame(i: CommandInteraction) {
 			await reply(currentI, embed, {
 				files: [
 					new MessageAttachment(
-						buildImage(target, guesses),
+						buildGameImage(target, guesses),
 						"wordle.png"
 					)
 				]
@@ -300,7 +301,7 @@ ${buildGrid(target, guesses)}
 
 	await reply(currentI, embed, {
 		files: [
-			new MessageAttachment(buildImage(target, guesses), "wordle.png")
+			new MessageAttachment(buildGameImage(target, guesses), "wordle.png")
 		]
 	});
 
@@ -330,6 +331,37 @@ ${buildGrid(target, guesses)}
 			playingUsers.size
 		} playing.`
 	);
+}
+
+async function sendStats(i: CommandInteraction) {
+	const user = await prisma.user.findUnique({
+		where: { userId: i.user.id }
+	});
+
+	if (!user) {
+		await reply(i, "You haven't played any games yet!");
+		return;
+	}
+
+	const embed = new MessageEmbed()
+		.setTitle("Wordle Stats")
+		.setImage("attachment://stats.png");
+
+	const image = buildStatsImage({
+		...user,
+		dist: [
+			user.wins1,
+			user.wins2,
+			user.wins3,
+			user.wins4,
+			user.wins5,
+			user.wins6
+		]
+	});
+
+	await reply(i, embed, {
+		files: [new MessageAttachment(image, "stats.png")]
+	});
 }
 
 await client.login(

@@ -37,7 +37,9 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName("quit")
 		.setDescription("Quit your current Wordle game."),
-	new SlashCommandBuilder().setName("stats").setDescription("Get your.")
+	new SlashCommandBuilder()
+		.setName("stats")
+		.setDescription("Display statistics about your past games.")
 ];
 
 const rest = new REST().setToken(token!);

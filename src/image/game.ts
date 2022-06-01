@@ -1,14 +1,14 @@
 import { Canvas } from "@napi-rs/canvas";
 
-import { range } from "./util";
-
-const GREEN = "#5c8d4d";
-const YELLOW = "#b19f3b";
-const GRAY = "#3a3a3c";
-const DARK_GRAY = "#121213";
-const LIGHT_GRAY = "#818384";
-
-const FONT_FAMILY = "'DejaVu Sans'";
+import { range } from "../util";
+import {
+	DARK_GRAY,
+	FONT_FAMILY,
+	GRAY,
+	GREEN,
+	LIGHT_GRAY,
+	YELLOW
+} from "./constants";
 
 const keys = [
 	["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
@@ -29,7 +29,7 @@ const ctx = canvas.getContext("2d");
 ctx.textBaseline = "middle";
 ctx.textAlign = "center";
 
-export function buildImage(target: string, guesses: string[]) {
+export function buildGameImage(target: string, guesses: string[]) {
 	ctx.fillStyle = DARK_GRAY;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
