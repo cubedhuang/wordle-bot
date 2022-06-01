@@ -58,6 +58,7 @@ const helpEmbed = new MessageEmbed()
 \`/wordle\`: Start a game of Wordle! Wordle games are currently per-user, and multiple people can play a game in a channel at once.
 \`/guess\`: Guess a word in your current Wordle game.
 \`/quit\`: Stop your current Wordle game.
+\`/stats\`: Display statistics for your past Wordle games.
 `.trim()
 	);
 
