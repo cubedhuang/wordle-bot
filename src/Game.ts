@@ -122,11 +122,11 @@ export class Game {
 				.setTitle(win ? "You won!" : "You lost...")
 				.setDescription(
 					`
-			The word was **${game.target}**.
+The word was **${game.target}**.
 
-			Wordle Bot ${win ? guesses.length : "X"}/6
+Wordle Bot ${win ? guesses.length : "X"}/6
 
-			${buildGrid(game.target, guesses)}
+${buildGrid(game.target, guesses)}
 			`.trim()
 				)
 				.setImage("attachment://wordle.webp");
