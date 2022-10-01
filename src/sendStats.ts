@@ -55,11 +55,13 @@ export async function sendStats(i: ChatInputCommandInteraction) {
 
 	let streak = 0;
 	let maxStreak = 0;
+	const dist = [0, 0, 0, 0, 0, 0];
 
 	for (const game of user.games) {
 		if (game.result === "WIN") {
 			streak++;
-		} else {
+			dist[game._count.guesses - 1]++;
+		} else if (game.result !== "PLAYING") {
 			if (streak > maxStreak) {
 				maxStreak = streak;
 			}
@@ -79,15 +81,7 @@ export async function sendStats(i: ChatInputCommandInteraction) {
 		quits: count(user.games, game => game.result === "QUIT"),
 		streak,
 		maxStreak,
-		dist: user.games
-			.filter(game => game.result === "WIN")
-			.reduce(
-				(dist, game) => {
-					dist[game._count.guesses - 1]++;
-					return dist;
-				},
-				[0, 0, 0, 0, 0, 0]
-			)
+		dist
 	});
 
 	await reply(i, embed, {
