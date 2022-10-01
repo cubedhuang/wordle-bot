@@ -109,7 +109,7 @@ export function buildGameImage(target: string, guesses: string[]) {
 		}
 	}
 
-	return canvas.toBuffer("image/png");
+	return canvas.toBuffer("image/webp");
 }
 
 function roundRect(x: number, y: number, w: number, h: number, r: number) {

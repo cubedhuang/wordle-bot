@@ -1,5 +1,6 @@
 import { Canvas } from "@napi-rs/canvas";
 
+import { range } from "../util";
 import { DARK_GRAY, FONT_FAMILY, GRAY, GREEN } from "./constants";
 
 const canvas = new Canvas(500, 300);
@@ -52,7 +53,7 @@ export function buildStatsImage(data: BuildStatsData) {
 	const max = Math.max(...bars);
 	const scale = (barOffset * 2 - labelSpace) / max;
 
-	for (let i = 0; i < bars.length; i++) {
+	for (const i of range(bars.length)) {
 		const y = 140 + i * 24;
 
 		ctx.fillStyle = bars[i] === 0 ? GRAY : GREEN;
@@ -84,7 +85,7 @@ export function buildStatsImage(data: BuildStatsData) {
 		);
 	}
 
-	return canvas.toBuffer("image/png");
+	return canvas.toBuffer("image/webp");
 }
 
 function renderStat(value: number, label: string, x: number) {

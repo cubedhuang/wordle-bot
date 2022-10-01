@@ -1,8 +1,8 @@
 import "dotenv/config";
 
-import { SlashCommandBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v10";
+import { SlashCommandBuilder } from "discord.js";
 
 const isDev = process.argv.includes("dev");
 

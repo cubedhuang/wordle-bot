@@ -1,27 +1,41 @@
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["referentialIntegrity"]
+    provider = "prisma-client-js"
 }
 
 datasource db {
-    provider             = "mysql"
-    url                  = env("DATABASE_URL")
-    referentialIntegrity = "prisma"
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-    id        Int    @id @default(autoincrement())
-    userId    String @unique
-    started   Int    @default(0)
-    wins      Int    @default(0)
-    wins1     Int    @default(0)
-    wins2     Int    @default(0)
-    wins3     Int    @default(0)
-    wins4     Int    @default(0)
-    wins5     Int    @default(0)
-    wins6     Int    @default(0)
-    quits     Int    @default(0)
-    losses    Int    @default(0)
-    streak    Int    @default(0)
-    maxStreak Int    @default(0)
+    id         BigInt @id
+    activeGame Game?  @relation("activeGame")
+    games      Game[]
+}
+
+model Game {
+    id           Int        @id @default(autoincrement())
+    user         User       @relation(fields: [userId], references: [id])
+    userId       BigInt
+    activeUser   User?      @relation("activeGame", fields: [activeUserId], references: [id])
+    activeUserId BigInt?    @unique
+    result       GameResult @default(PLAYING)
+    target       String     @db.VarChar(5)
+    guesses      Guess[]
+    startTime    DateTime
+    endTime      DateTime?
+}
+
+model Guess {
+    id     Int    @id @default(autoincrement())
+    game   Game   @relation(fields: [gameId], references: [id])
+    gameId Int
+    guess  String @db.VarChar(5)
+}
+
+enum GameResult {
+    WIN
+    LOSS
+    QUIT
+    PLAYING
 }
