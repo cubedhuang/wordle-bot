@@ -6,12 +6,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 GlobalFonts.registerFromPath(
 	join(__dirname, "..", "fonts", "ClearSans-Bold.ttf"),
-	"ClearSans"
+	"Clear Sans"
 );
 GlobalFonts.registerFromPath(
 	join(__dirname, "..", "fonts", "ClearSans-Regular.ttf"),
-	"ClearSans"
+	"Clear Sans"
+);
+GlobalFonts.registerFromPath(
+	join(__dirname, "..", "fonts", "FiraMono-Bold.ttf"),
+	"Fira Mono"
 );
 
 export * from "./game";
 export * from "./stats";
+export * from "./statsGuesses";

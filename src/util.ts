@@ -1,4 +1,5 @@
 import type {
+	ButtonInteraction,
 	CommandInteraction,
 	EmbedBuilder,
 	InteractionReplyOptions
@@ -22,7 +23,7 @@ export function range(start: number, end?: number): Iterable<number> {
 }
 
 export function reply(
-	i: CommandInteraction,
+	i: ButtonInteraction | CommandInteraction,
 	content: string | EmbedBuilder,
 	options?: InteractionReplyOptions
 ) {
