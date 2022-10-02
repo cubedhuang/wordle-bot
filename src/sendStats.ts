@@ -1,36 +1,136 @@
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
-	ButtonBuilder,
-	ButtonInteraction,
-	ButtonStyle,
 	ChatInputCommandInteraction,
-	Collection,
-	EmbedBuilder
+	EmbedBuilder,
+	SelectMenuBuilder,
+	SelectMenuInteraction,
+	SelectMenuOptionBuilder,
+	User
 } from "discord.js";
 
 import { db } from "./db";
 import { buildStatsGuessesImage, buildStatsImage } from "./image";
-import { reply } from "./util";
+import { count, reply, takeTopCounts } from "./util";
 
-const guessesButton = (id: string) =>
-	new ButtonBuilder()
-		.setLabel("Guesses")
-		.setStyle(ButtonStyle.Primary)
-		.setEmoji("❓")
-		.setCustomId(id);
-const buttonRow = (id: string) =>
-	new ActionRowBuilder<ButtonBuilder>().addComponents(guessesButton(id));
-
-function count<T>(array: T[], callback: (item: T) => boolean) {
-	return array.reduce((count, item) => count + (callback(item) ? 1 : 0), 0);
+enum StatsView {
+	General = "General",
+	PersonalGuesses = "PersonalGuesses",
+	GlobalGuesses = "GlobalGuesses"
 }
 
-export async function sendStats(i: ChatInputCommandInteraction) {
+const statsOptions = (id: string) =>
+	new SelectMenuBuilder()
+		.setCustomId(id)
+		.addOptions([
+			new SelectMenuOptionBuilder()
+				.setLabel("General")
+				.setDescription(
+					"General personal statistics, like the Wordle website."
+				)
+				.setValue(StatsView.General)
+				.setEmoji({ name: "wordle", id: "1025939109329514546" })
+				.setDefault(),
+			new SelectMenuOptionBuilder()
+				.setLabel("Personal Guesses")
+				.setDescription("Statistics about your guesses.")
+				.setEmoji({ name: "wordle", id: "1025939109329514546" })
+				.setValue(StatsView.PersonalGuesses),
+			new SelectMenuOptionBuilder()
+				.setLabel("Global Guesses")
+				.setDescription(
+					"Statistics about all guesses made by everyone."
+				)
+				.setValue(StatsView.GlobalGuesses)
+		]);
+const statsRow = (id: string) =>
+	new ActionRowBuilder<SelectMenuBuilder>().addComponents(statsOptions(id));
+
+export async function sendGeneralStats(i: ChatInputCommandInteraction) {
 	const targetUser = i.options.getUser("user") ?? i.user;
 
+	const stats = await createGeneralStats({
+		receiver: i.user,
+		targetId: targetUser.id,
+		targetUsername: targetUser.username
+	});
+
+	if (typeof stats === "string") {
+		await reply(i, stats, { ephemeral: true });
+		return;
+	}
+
+	const { embed, files } = stats;
+
+	await reply(i, embed, {
+		files,
+		components: [statsRow(targetUser.id)]
+	});
+}
+
+interface StatsInput {
+	receiver: User;
+	targetId: string;
+	targetUsername: string;
+}
+
+interface StatsEmbedInfo {
+	embed: EmbedBuilder;
+	files: AttachmentBuilder[];
+}
+
+type StatsOutput = string | StatsEmbedInfo;
+
+const specificStatsEmbeds: Record<
+	StatsView,
+	(info: StatsInput) => Promise<StatsOutput>
+> = {
+	[StatsView.General]: createGeneralStats,
+	[StatsView.PersonalGuesses]: createPersonalGuessesStats,
+	[StatsView.GlobalGuesses]: createGlobalGuessesStats
+};
+
+export async function sendSpecificStats(i: SelectMenuInteraction) {
+	const targetId = i.customId;
+
+	const stats = await specificStatsEmbeds[i.values[0] as StatsView]({
+		receiver: i.user,
+		targetId,
+		targetUsername: await i.client.users
+			.fetch(targetId)
+			.then(u => u.username)
+	});
+
+	if (typeof stats === "string") {
+		await i.update({
+			embeds: [
+				{
+					title: "Error",
+					description: stats,
+					color: 0x56a754
+				}
+			],
+			components: [statsRow(targetId)]
+		});
+		return;
+	}
+
+	const { embed, files } = stats;
+
+	await i.update({
+		embeds: [embed.setColor("#56a754")],
+		files,
+		components: [statsRow(targetId)]
+	});
+}
+
+async function createGeneralStats({
+	receiver,
+	targetId,
+	targetUsername
+}: StatsInput): Promise<StatsOutput> {
 	const user = await db.user.findUnique({
-		where: { id: BigInt(targetUser.id) },
+		where: { id: BigInt(targetId) },
 		include: {
 			games: {
 				include: {
@@ -43,24 +143,15 @@ export async function sendStats(i: ChatInputCommandInteraction) {
 	});
 
 	if (!user?.games.length) {
-		await reply(
-			i,
-			`${
-				targetUser.id === i.user.id
-					? "You haven't"
-					: `${targetUser} hasn't`
-			} played a game yet!`,
-			{ ephemeral: true }
-		);
-		return;
+		return `${
+			targetId === receiver.id ? "You haven't" : `<@${targetId}> hasn't`
+		} played a game yet!`;
 	}
 
 	const embed = new EmbedBuilder()
 		.setTitle(
 			`${
-				targetUser.id === i.user.id
-					? "Your"
-					: `${targetUser.username}'s`
+				targetId === receiver.id ? "Your" : `${targetUsername}'s`
 			} Wordle Statistics`
 		)
 		.setImage("attachment://stats.webp");
@@ -96,17 +187,19 @@ export async function sendStats(i: ChatInputCommandInteraction) {
 		dist
 	});
 
-	await reply(i, embed, {
-		files: [new AttachmentBuilder(image).setName("stats.webp")],
-		components: [buttonRow(targetUser.id)]
-	});
+	return {
+		embed,
+		files: [new AttachmentBuilder(image).setName("stats.webp")]
+	};
 }
 
-export async function sendGuessesStats(i: ButtonInteraction) {
-	const targetUserId = i.customId;
-
+async function createPersonalGuessesStats({
+	receiver,
+	targetId,
+	targetUsername
+}: StatsInput): Promise<StatsOutput> {
 	const user = await db.user.findUnique({
-		where: { id: BigInt(targetUserId) },
+		where: { id: BigInt(targetId) },
 		include: {
 			games: { include: { guesses: true } },
 			activeGame: { select: { _count: { select: { guesses: true } } } }
@@ -114,16 +207,9 @@ export async function sendGuessesStats(i: ButtonInteraction) {
 	});
 
 	if (!user?.games.length) {
-		await reply(
-			i,
-			`${
-				targetUserId === i.user.id
-					? "You haven't"
-					: `<@${targetUserId}> hasn't`
-			} played a game yet!`,
-			{ ephemeral: true }
-		);
-		return;
+		return `${
+			targetId === receiver.id ? "You haven't" : `<@${targetId}> hasn't`
+		} played a game yet!`;
 	}
 
 	const guesses = user.games
@@ -132,19 +218,18 @@ export async function sendGuessesStats(i: ButtonInteraction) {
 		.map(g => g.guess);
 
 	if (!guesses.length) {
-		await reply(
-			i,
-			`${
-				targetUserId === i.user.id
-					? "You haven't"
-					: `<@${targetUserId}> hasn't`
-			} made any guesses yet!`,
-			{ ephemeral: true }
-		);
-		return;
+		return `${
+			targetId === receiver.id ? "You haven't" : `<@${targetId}> hasn't`
+		} made any guesses yet!`;
 	}
 
-	const embed = new EmbedBuilder().setTitle("Wordle Statistics: Guesses");
+	const embed = new EmbedBuilder()
+		.setTitle(
+			`${
+				targetId === receiver.id ? "Your" : `${targetUsername}'s`
+			} Wordle Statistics: Guesses`
+		)
+		.setImage("attachment://stats.webp");
 
 	const wonGames = user.games.filter(game => game.result === "WIN");
 
@@ -160,20 +245,43 @@ export async function sendGuessesStats(i: ButtonInteraction) {
 			wonGames.length
 	});
 
-	await reply(i, embed.setImage("attachment://stats.webp"), {
+	return {
+		embed,
 		files: [new AttachmentBuilder(image).setName("stats.webp")]
-	});
+	};
 }
 
-function takeTopCounts(values: string[], n: number): [string, number][] {
-	const counts = new Collection<string, number>();
+async function createGlobalGuessesStats(): Promise<StatsOutput> {
+	const games = await db.game.findMany({
+		where: { result: { not: "PLAYING" } },
+		include: { guesses: true }
+	});
 
-	for (const value of values) {
-		counts.set(value, (counts.get(value) ?? 0) + 1);
-	}
+	// TODO: calculate on the database side
 
-	return counts
-		.sort((v1, v2, k1, k2) => v2 - v1 || k1.localeCompare(k2))
-		.firstKey(n)
-		.map(key => [key, counts.get(key)!]);
+	const guesses = games
+		.map(game => game.guesses)
+		.flat()
+		.map(g => g.guess);
+
+	const embed = new EmbedBuilder()
+		.setTitle("Global Wordle Statistics: Guesses")
+		.setImage("attachment://stats.webp");
+
+	const wonGames = games.filter(game => game.result === "WIN");
+
+	const image = buildStatsGuessesImage({
+		top: takeTopCounts(guesses, 10),
+		total: guesses.length,
+		unique: new Set(guesses).size,
+		perGame: guesses.length / games.length,
+		perWin:
+			wonGames.reduce((sum, game) => sum + game.guesses.length, 0) /
+			wonGames.length
+	});
+
+	return {
+		embed,
+		files: [new AttachmentBuilder(image).setName("stats.webp")]
+	};
 }

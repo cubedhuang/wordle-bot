@@ -9,7 +9,7 @@ import {
 
 import { Game } from "./Game";
 import { helpEmbed, rulesEmbed } from "./info";
-import { sendGuessesStats, sendStats } from "./sendStats";
+import { sendGeneralStats, sendSpecificStats } from "./sendStats";
 import { reply } from "./util";
 
 process.on("uncaughtException", err => {
@@ -70,12 +70,12 @@ const commands: Record<
 	},
 
 	async stats(i) {
-		await sendStats(i);
+		await sendGeneralStats(i);
 	}
 };
 
 client.on("interactionCreate", async i => {
-	if (i.isButton()) sendGuessesStats(i);
+	if (i.isSelectMenu()) sendSpecificStats(i);
 
 	if (!i.isChatInputCommand()) return;
 
