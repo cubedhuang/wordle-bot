@@ -232,6 +232,10 @@ async function createPersonalGuessesStats({
 		} made any guesses yet!`;
 	}
 
+	const firstGuesses = user.games
+		.map(game => game.guesses[0]?.guess)
+		.filter(g => !!g);
+
 	const embed = new EmbedBuilder()
 		.setTitle(
 			`${
@@ -243,7 +247,8 @@ async function createPersonalGuessesStats({
 	const wonGames = user.games.filter(game => game.result === "WIN");
 
 	const image = buildStatsGuessesImage({
-		top: takeTopCounts(guesses, 10),
+		topTotal: takeTopCounts(guesses, 10),
+		topFirst: takeTopCounts(firstGuesses, 10),
 		total: guesses.length,
 		unique: new Set(guesses).size,
 		perGame:
@@ -272,6 +277,9 @@ async function createGlobalGuessesStats(): Promise<StatsOutput> {
 		.map(game => game.guesses)
 		.flat()
 		.map(g => g.guess);
+	const firstGuesses = games
+		.map(game => game.guesses[0]?.guess)
+		.filter(g => !!g);
 
 	const embed = new EmbedBuilder()
 		.setTitle("Global Wordle Statistics: Guesses")
@@ -280,7 +288,8 @@ async function createGlobalGuessesStats(): Promise<StatsOutput> {
 	const wonGames = games.filter(game => game.result === "WIN");
 
 	const image = buildStatsGuessesImage({
-		top: takeTopCounts(guesses, 10),
+		topTotal: takeTopCounts(guesses, 10),
+		topFirst: takeTopCounts(firstGuesses, 10),
 		total: guesses.length,
 		unique: new Set(guesses).size,
 		perGame: guesses.length / games.length,

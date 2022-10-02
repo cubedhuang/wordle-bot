@@ -6,14 +6,17 @@ const IMAGE_SCALE = 5;
 
 const MAX_BAR_WIDTH = 232;
 const MIN_BAR_WIDTH = 28;
-const BAR_END = 336;
+const BAR_END = 352;
+const TOP_TOTAL_START = 30;
+const TOP_START_START = 170;
 
 const canvas = new Canvas(400 * IMAGE_SCALE, 300 * IMAGE_SCALE);
 const ctx = canvas.getContext("2d");
 const svg = new Image(400 * IMAGE_SCALE, 300 * IMAGE_SCALE);
 
 interface StatsGuessesData {
-	top: [string, number][];
+	topTotal: [string, number][];
+	topFirst: [string, number][];
 	total: number;
 	unique: number;
 	perGame: number;
@@ -57,37 +60,74 @@ const createSvg = (data: StatsGuessesData) => `
 			<tspan x="12" dy="12">Per Win</tspan>
 		</text>
 
-		<text font-size="24" font-weight="bold" x="388" y="36" text-anchor="end">Most Used Guesses</text>
+		<text font-size="14" font-weight="bold" x="388" y="${TOP_TOTAL_START}" text-anchor="end">Most Used Guesses</text>
 
-		${data.top
+		${data.topTotal
 			.map(([word, count], i) => {
 				const barWidth = Math.max(
-					(count / data.top[0][1]) * MAX_BAR_WIDTH,
+					(count / data.topTotal[0][1]) * MAX_BAR_WIDTH,
 					MIN_BAR_WIDTH
 				);
 
 				return `
 					<text
-						font-family="DejaVu Sans Mono"
-						font-size="16"
+						font-family="Fira Code"
+						font-size="10"
 						font-weight="bold"
 						x="388"
-						y="${63 + i * 24}"
+						y="${TOP_TOTAL_START + 15 + i * 11}"
 						text-anchor="end"
 					>
 						${word}</text>
 					<rect
 						x="${BAR_END - barWidth}"
-						y="${48 + i * 24}"
+						y="${TOP_TOTAL_START + 6 + i * 11}"
 						width="${barWidth}"
-						height="18"
+						height="10"
 						fill="${GREEN}"
 					/>
 					<text
-						font-size="14"
+						font-size="8"
 						font-weight="bold"
-						x="${BAR_END - barWidth + 6}"
-						y="${62 + i * 24}"
+						x="${BAR_END - barWidth + 4}"
+						y="${TOP_TOTAL_START + 14 + i * 11}"
+					>
+						${count}
+					</text>`;
+			})
+			.join("")}
+
+		<text font-size="14" font-weight="bold" x="388" y="${TOP_START_START}" text-anchor="end">Most Used Starting Words</text>
+
+		${data.topFirst
+			.map(([word, count], i) => {
+				const barWidth = Math.max(
+					(count / data.topFirst[0][1]) * MAX_BAR_WIDTH,
+					MIN_BAR_WIDTH
+				);
+
+				return `
+					<text
+						font-family="Fira Code"
+						font-size="10"
+						font-weight="bold"
+						x="388"
+						y="${TOP_START_START + 15 + i * 11}"
+						text-anchor="end"
+					>
+						${word}</text>
+					<rect
+						x="${BAR_END - barWidth}"
+						y="${TOP_START_START + 6 + i * 11}"
+						width="${barWidth}"
+						height="10"
+						fill="${GREEN}"
+					/>
+					<text
+						font-size="8"
+						font-weight="bold"
+						x="${BAR_END - barWidth + 4}"
+						y="${TOP_START_START + 14 + i * 11}"
 					>
 						${count}
 					</text>`;
