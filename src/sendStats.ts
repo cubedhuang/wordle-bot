@@ -107,7 +107,10 @@ export async function sendGuessesStats(i: ButtonInteraction) {
 
 	const user = await db.user.findUnique({
 		where: { id: BigInt(targetUserId) },
-		include: { games: { include: { guesses: true } } }
+		include: {
+			games: { include: { guesses: true } },
+			activeGame: { select: { _count: { select: { guesses: true } } } }
+		}
 	});
 
 	if (!user?.games.length) {
@@ -149,7 +152,9 @@ export async function sendGuessesStats(i: ButtonInteraction) {
 		top: takeTopCounts(guesses, 10),
 		total: guesses.length,
 		unique: new Set(guesses).size,
-		perGame: guesses.length / user.games.length,
+		perGame:
+			(guesses.length - (user.activeGame?._count.guesses ?? 0)) /
+			(user.games.length - (user.activeGame ? 1 : 0)),
 		perWin:
 			wonGames.reduce((sum, game) => sum + game.guesses.length, 0) /
 			wonGames.length
