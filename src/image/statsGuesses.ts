@@ -2,8 +2,15 @@ import { Canvas, Image } from "@napi-rs/canvas";
 
 import { GREEN } from "./constants";
 
-const canvas = new Canvas(400, 300);
+const IMAGE_SCALE = 5;
+
+const MAX_BAR_WIDTH = 232;
+const MIN_BAR_WIDTH = 28;
+const BAR_END = 336;
+
+const canvas = new Canvas(400 * IMAGE_SCALE, 300 * IMAGE_SCALE);
 const ctx = canvas.getContext("2d");
+const svg = new Image(400 * IMAGE_SCALE, 300 * IMAGE_SCALE);
 
 interface StatsGuessesData {
 	top: [string, number][];
@@ -12,10 +19,6 @@ interface StatsGuessesData {
 	perGame: number;
 	perWin: number;
 }
-
-const MAX_BAR_WIDTH = 232;
-const MIN_BAR_WIDTH = 28;
-const BAR_END = 336;
 
 const createSvg = (data: StatsGuessesData) => `
 <svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -94,9 +97,8 @@ const createSvg = (data: StatsGuessesData) => `
 </svg>`;
 
 export function buildStatsGuessesImage(data: StatsGuessesData) {
-	const svg = new Image(400, 300);
 	svg.src = Buffer.from(createSvg(data), "utf8");
-	ctx.drawImage(svg, 0, 0);
+	ctx.drawImage(svg, 0, 0, 400 * IMAGE_SCALE, 300 * IMAGE_SCALE);
 
 	return canvas.toBuffer("image/webp");
 }
