@@ -4,4 +4,4 @@ export const GRAY = "#3a3a3c";
 export const DARK_GRAY = "#121213";
 export const LIGHT_GRAY = "#818384";
 
-export const FONT_FAMILY = "'DejaVu Sans'";
+export const FONT_FAMILY = "'ClearSans'";

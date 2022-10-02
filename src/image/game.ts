@@ -92,7 +92,7 @@ export function buildGameImage(target: string, guesses: string[]) {
 		}
 	}
 
-	ctx.font = `bold 18px ${FONT_FAMILY}`;
+	ctx.font = `bold 17px ${FONT_FAMILY}`;
 
 	for (const i of range(keys.length)) {
 		const startX = i === 0 ? 5 : i === 1 ? 20 : 55;
