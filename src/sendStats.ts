@@ -91,6 +91,14 @@ const specificStatsEmbeds: Record<
 };
 
 export async function sendSpecificStats(i: SelectMenuInteraction) {
+	if (i.user.id !== i.message.interaction?.user.id) {
+		await i.reply({
+			content: "You didn't send this command!",
+			ephemeral: true
+		});
+		return;
+	}
+
 	const targetId = i.customId;
 
 	const stats = await specificStatsEmbeds[i.values[0] as StatsView]({
