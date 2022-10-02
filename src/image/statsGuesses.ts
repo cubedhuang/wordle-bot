@@ -13,7 +13,7 @@ interface StatsGuessesData {
 	perWin: number;
 }
 
-const MAX_BAR_WIDTH = 240;
+const MAX_BAR_WIDTH = 232;
 const MIN_BAR_WIDTH = 28;
 const BAR_END = 336;
 
