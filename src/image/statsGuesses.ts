@@ -21,7 +21,7 @@ const createSvg = (data: StatsGuessesData) => `
 <svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
 	<rect width="400" height="300" fill="#121213" />
 
-	<g fill="white" font-family="Clear Sans">
+	<g fill="white" font-family="DejaVu Sans">
 		<text font-size="32" font-weight="bold" x="12" y="46">
 			${data.total}
 		</text>
@@ -65,7 +65,7 @@ const createSvg = (data: StatsGuessesData) => `
 
 				return `
 					<text
-						font-family="Fira Mono"
+						font-family="DejaVu Sans Mono"
 						font-size="16"
 						font-weight="bold"
 						x="388"
