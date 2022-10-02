@@ -19,32 +19,33 @@ enum StatsView {
 	GlobalGuesses = "GlobalGuesses"
 }
 
-const statsOptions = (id: string) =>
-	new SelectMenuBuilder()
-		.setCustomId(id)
-		.addOptions([
-			new SelectMenuOptionBuilder()
-				.setLabel("General")
-				.setDescription(
-					"General personal statistics, like the Wordle website."
-				)
-				.setValue(StatsView.General)
-				.setEmoji({ name: "wordle", id: "1025939109329514546" })
-				.setDefault(),
-			new SelectMenuOptionBuilder()
-				.setLabel("Personal Guesses")
-				.setDescription("Statistics about your guesses.")
-				.setEmoji({ name: "wordle", id: "1025939109329514546" })
-				.setValue(StatsView.PersonalGuesses),
-			new SelectMenuOptionBuilder()
-				.setLabel("Global Guesses")
-				.setDescription(
-					"Statistics about all guesses made by everyone."
-				)
-				.setValue(StatsView.GlobalGuesses)
-		]);
-const statsRow = (id: string) =>
-	new ActionRowBuilder<SelectMenuBuilder>().addComponents(statsOptions(id));
+const statsOptions = (id: string, value: StatsView) =>
+	new SelectMenuBuilder().setCustomId(id).addOptions([
+		new SelectMenuOptionBuilder()
+			.setLabel("General")
+			.setDescription(
+				"General personal statistics, like the Wordle website."
+			)
+			.setValue(StatsView.General)
+			.setEmoji({ name: "wordle", id: "1025939109329514546" })
+			.setDefault(value === StatsView.General),
+		new SelectMenuOptionBuilder()
+			.setLabel("Personal Guesses")
+			.setDescription("Statistics about your guesses.")
+			.setEmoji("📊")
+			.setValue(StatsView.PersonalGuesses)
+			.setDefault(value === StatsView.PersonalGuesses),
+		new SelectMenuOptionBuilder()
+			.setLabel("Global Guesses")
+			.setDescription("Statistics about all guesses made by everyone.")
+			.setEmoji("🌎")
+			.setValue(StatsView.GlobalGuesses)
+			.setDefault(value === StatsView.GlobalGuesses)
+	]);
+const statsRow = (id: string, value = StatsView.General) =>
+	new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+		statsOptions(id, value)
+	);
 
 export async function sendGeneralStats(i: ChatInputCommandInteraction) {
 	const targetUser = i.options.getUser("user") ?? i.user;
@@ -118,7 +119,7 @@ export async function sendSpecificStats(i: SelectMenuInteraction) {
 					color: 0x56a754
 				}
 			],
-			components: [statsRow(targetId)]
+			components: [statsRow(targetId, i.values[0] as StatsView)]
 		});
 		return;
 	}
@@ -128,7 +129,7 @@ export async function sendSpecificStats(i: SelectMenuInteraction) {
 	await i.update({
 		embeds: [embed.setColor("#56a754")],
 		files,
-		components: [statsRow(targetId)]
+		components: [statsRow(targetId, i.values[0] as StatsView)]
 	});
 }
 
