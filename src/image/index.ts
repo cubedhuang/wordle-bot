@@ -1,21 +1,9 @@
 import { GlobalFonts } from "@napi-rs/canvas";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-GlobalFonts.registerFromPath(
-	join(__dirname, "..", "fonts", "ClearSans-Bold.ttf"),
-	"Clear Sans"
-);
-GlobalFonts.registerFromPath(
-	join(__dirname, "..", "fonts", "ClearSans-Regular.ttf"),
-	"Clear Sans"
-);
-GlobalFonts.registerFromPath(
-	join(__dirname, "..", "fonts", "FiraMono-Bold.ttf"),
-	"Fira Mono"
-);
+GlobalFonts.register(await readFile("./fonts/ClearSans-Bold.ttf"));
+GlobalFonts.register(await readFile("./fonts/ClearSans-Regular.ttf"));
+GlobalFonts.register(await readFile("./fonts/FiraMono-Bold.ttf"));
 
 export * from "./game";
 export * from "./stats";
