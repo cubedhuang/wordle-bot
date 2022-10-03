@@ -22,7 +22,7 @@ model Game {
     result       GameResult @default(PLAYING)
     target       String     @db.VarChar(5)
     guesses      Guess[]
-    startTime    DateTime
+    startTime    DateTime   @default(now())
     endTime      DateTime?
 }
 

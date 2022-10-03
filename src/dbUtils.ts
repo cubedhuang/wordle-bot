@@ -14,8 +14,7 @@ export async function getUser(id: bigint) {
 			data: {
 				target: getRandomWordleAnswer(),
 				userId: id,
-				activeUserId: id,
-				startTime: new Date()
+				activeUserId: id
 			},
 			include: { guesses: true }
 		});
