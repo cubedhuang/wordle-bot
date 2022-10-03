@@ -71,7 +71,7 @@ const createSvg = (data: StatsGuessesData) => `
 
 				return `
 					<text
-						font-family="Fira Code"
+						font-family="DejaVu Sans Mono"
 						font-size="10"
 						font-weight="bold"
 						x="388"
