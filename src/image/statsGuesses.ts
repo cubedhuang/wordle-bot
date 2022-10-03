@@ -1,6 +1,6 @@
 import { Canvas, Image } from "@napi-rs/canvas";
 
-import { GREEN } from "./constants";
+import { FONT_FAMILY, FONT_FAMILY_MONO, GREEN } from "./constants";
 
 const IMAGE_SCALE = 5;
 
@@ -27,7 +27,7 @@ const createSvg = (data: StatsGuessesData) => `
 <svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
 	<rect width="400" height="300" fill="#121213" />
 
-	<g fill="white" font-family="DejaVu Sans">
+	<g fill="white" font-family="${FONT_FAMILY}">
 		<text font-size="32" font-weight="bold" x="12" y="46">
 			${data.total}
 		</text>
@@ -71,7 +71,7 @@ const createSvg = (data: StatsGuessesData) => `
 
 				return `
 					<text
-						font-family="DejaVu Sans Mono"
+						font-family="${FONT_FAMILY_MONO}"
 						font-size="10"
 						font-weight="bold"
 						x="388"
@@ -108,7 +108,7 @@ const createSvg = (data: StatsGuessesData) => `
 
 				return `
 					<text
-						font-family="Fira Code"
+						font-family="${FONT_FAMILY_MONO}"
 						font-size="10"
 						font-weight="bold"
 						x="388"
