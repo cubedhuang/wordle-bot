@@ -1,4 +1,4 @@
-import { Canvas } from "@napi-rs/canvas";
+import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 
 import { range } from "../util";
 import {
@@ -23,13 +23,39 @@ for (const i of range(keys.length)) {
 	}
 }
 
-const canvas = new Canvas(350, 560);
-const ctx = canvas.getContext("2d");
+const fullCanvas = new Canvas(350, 560);
+const fullCtx = fullCanvas.getContext("2d");
 
-ctx.textBaseline = "middle";
-ctx.textAlign = "center";
+fullCtx.textBaseline = "middle";
+fullCtx.textAlign = "center";
 
-export function buildGameImage(target: string, guesses: string[]) {
+const shortCanvas = new Canvas(350, 418);
+const shortCtx = shortCanvas.getContext("2d");
+
+shortCtx.textBaseline = "middle";
+shortCtx.textAlign = "center";
+
+export function buildGameImage(
+	target: string,
+	guesses: string[],
+	keyboard = true
+) {
+	const canvas = keyboard ? fullCanvas : shortCanvas;
+	const ctx = keyboard ? fullCtx : shortCtx;
+
+	const keyColors = drawGameGrid(canvas, ctx, target, guesses);
+
+	if (keyboard) drawGameKeyboard(ctx, keyColors);
+
+	return canvas.toBuffer("image/webp");
+}
+
+function drawGameGrid(
+	canvas: Canvas,
+	ctx: SKRSContext2D,
+	target: string,
+	guesses: string[]
+) {
 	ctx.fillStyle = DARK_GRAY;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -92,6 +118,10 @@ export function buildGameImage(target: string, guesses: string[]) {
 		}
 	}
 
+	return keyColors;
+}
+
+function drawGameKeyboard(ctx: SKRSContext2D, keyColors: string[][]) {
 	ctx.font = `bold 17px ${FONT_FAMILY}`;
 
 	for (const i of range(keys.length)) {
@@ -108,16 +138,14 @@ export function buildGameImage(target: string, guesses: string[]) {
 			);
 		}
 	}
-
-	return canvas.toBuffer("image/webp");
 }
 
 function roundRect(x: number, y: number, w: number, h: number, r: number) {
-	ctx.beginPath();
-	ctx.arc(x + r, y + r, r, Math.PI, (Math.PI * 3) / 2);
-	ctx.arc(x + w - r, y + r, r, (Math.PI * 3) / 2, 0);
-	ctx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2);
-	ctx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI);
-	ctx.closePath();
-	ctx.fill();
+	fullCtx.beginPath();
+	fullCtx.arc(x + r, y + r, r, Math.PI, (Math.PI * 3) / 2);
+	fullCtx.arc(x + w - r, y + r, r, (Math.PI * 3) / 2, 0);
+	fullCtx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2);
+	fullCtx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI);
+	fullCtx.closePath();
+	fullCtx.fill();
 }

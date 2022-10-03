@@ -44,7 +44,10 @@ const commands = [
 			option
 				.setName("user")
 				.setDescription("The user to display statistics for.")
-		)
+		),
+	new SlashCommandBuilder()
+		.setName("history")
+		.setDescription("Browse through your past games.")
 ];
 
 const rest = new REST().setToken(token!);

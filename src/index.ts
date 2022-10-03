@@ -9,6 +9,7 @@ import {
 
 import { Game } from "./Game";
 import { helpEmbed, rulesEmbed } from "./info";
+import { sendHistory, sendHistoryPage } from "./sendHistory";
 import { sendGeneralStats, sendSpecificStats } from "./sendStats";
 import { reply } from "./util";
 
@@ -69,13 +70,13 @@ const commands: Record<
 		games.delete(i.user.id);
 	},
 
-	async stats(i) {
-		await sendGeneralStats(i);
-	}
+	stats: sendGeneralStats,
+	history: sendHistory
 };
 
 client.on("interactionCreate", async i => {
-	if (i.isSelectMenu()) sendSpecificStats(i);
+	if (i.isSelectMenu()) return await sendSpecificStats(i);
+	if (i.isButton()) return await sendHistoryPage(i);
 
 	if (!i.isChatInputCommand()) return;
 

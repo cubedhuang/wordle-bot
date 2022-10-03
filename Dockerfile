@@ -17,4 +17,4 @@ RUN yarn prisma generate
 COPY --link . .
 
 RUN yarn build
-ENTRYPOINT yarn prisma migrate deploy && yarn start
+ENTRYPOINT yarn prisma migrate deploy && yarn register && yarn start
