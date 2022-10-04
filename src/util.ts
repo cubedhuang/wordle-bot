@@ -1,11 +1,16 @@
 import {
+	ApplicationCommand,
 	ButtonInteraction,
+	Client,
 	Collection,
 	CommandInteraction,
 	EmbedBuilder,
+	GuildResolvable,
 	InteractionReplyOptions,
 	SelectMenuInteraction
 } from "discord.js";
+
+export const isDev = process.argv.includes("dev");
 
 export function range(length: number): Iterable<number>;
 export function range(start: number, end: number): Iterable<number>;
@@ -56,5 +61,29 @@ export function reply(
 			embeds: [content.setColor("#56a754")],
 			...options
 		});
+	}
+}
+
+const cachedIds = new Collection<string, string>();
+let commands:
+	| Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>
+	| undefined;
+
+export async function command(client: Client, name: string) {
+	if (cachedIds.has(name)) {
+		return `</${name}:${cachedIds.get(name)}>`;
+	}
+
+	commands ??= await client.application?.commands.fetch({
+		guildId: isDev ? "833525505932132362" : undefined
+	});
+
+	const id = commands?.find(c => c.name === name)?.id;
+
+	if (id) {
+		cachedIds.set(name, id);
+		return `</${name}:${id}>`;
+	} else {
+		return `\`/${name}\``;
 	}
 }

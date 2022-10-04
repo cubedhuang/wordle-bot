@@ -11,7 +11,7 @@ import { Game } from "./Game";
 import { helpEmbed, rulesEmbed } from "./info";
 import { sendHistory, sendHistoryPage } from "./sendHistory";
 import { sendGeneralStats, sendSpecificStats } from "./sendStats";
-import { reply } from "./util";
+import { isDev, reply } from "./util";
 
 process.on("uncaughtException", err => {
 	console.error("Uncaught", err);
@@ -50,11 +50,11 @@ const commands: Record<
 	(i: ChatInputCommandInteraction) => Promise<void>
 > = {
 	async help(i) {
-		await reply(i, helpEmbed);
+		await reply(i, await helpEmbed(i.client));
 	},
 
 	async rules(i) {
-		await reply(i, rulesEmbed);
+		await reply(i, await rulesEmbed(i.client));
 	},
 
 	async wordle(i) {
@@ -83,6 +83,4 @@ client.on("interactionCreate", async i => {
 	await commands[i.commandName]?.(i);
 });
 
-await client.login(
-	process.argv.includes("dev") ? process.env.TOKEN_DEV : process.env.TOKEN
-);
+await client.login(isDev ? process.env.TOKEN_DEV : process.env.TOKEN);

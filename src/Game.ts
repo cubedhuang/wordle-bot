@@ -8,7 +8,7 @@ import {
 import { db } from "./db";
 import { getUser } from "./dbUtils";
 import { buildGameImage } from "./image";
-import { range, reply } from "./util";
+import { command, range, reply } from "./util";
 import { isWordleWord } from "./wordle";
 
 function buildRow(target: string, guess: string) {
@@ -55,10 +55,17 @@ export class Game {
 		await reply(
 			i,
 			simpleEmbed().setDescription(
-				"Use `/guess` to guess a word or `/quit` to stop playing." +
-					(user.activeGame!.guesses.length
+				`Use ${await command(
+					i.client,
+					"guess"
+				)} to guess a word or ${await command(
+					i.client,
+					"quit"
+				)} to stop playing.${
+					user.activeGame!.guesses.length
 						? "\n\nYou were already in the middle of a Wordle game:"
-						: "")
+						: ""
+				}`
 			),
 			{
 				files: [
@@ -74,7 +81,8 @@ export class Game {
 	}
 
 	async guess(i: ChatInputCommandInteraction) {
-		const user = await getUser(BigInt(i.user.id));
+		const id = BigInt(i.user.id);
+		const user = await getUser(id);
 		const game = user.activeGame!;
 
 		const guess = i.options.getString("guess", true);
@@ -135,7 +143,7 @@ ${buildGrid(game.target, guesses)}
 				files: [image]
 			});
 
-			await this.done(win ? "WIN" : "LOSS");
+			await this.done(id, win ? "WIN" : "LOSS");
 
 			return;
 		}
@@ -146,15 +154,19 @@ ${buildGrid(game.target, guesses)}
 	}
 
 	async quit(i: ChatInputCommandInteraction) {
+		const id = BigInt(i.user.id);
 		const user = await db.user.findUnique({
-			where: { id: BigInt(i.user.id) },
+			where: { id },
 			include: { activeGame: true }
 		});
 
 		if (!user?.activeGame) {
 			await reply(
 				i,
-				"You're not currently in a game! Use `/wordle` to start one.",
+				`You're not currently in a game! Use ${await command(
+					i.client,
+					"wordle"
+				)} to start one.`,
 				{
 					ephemeral: true
 				}
@@ -170,12 +182,12 @@ ${buildGrid(game.target, guesses)}
 			}**.`
 		);
 
-		await this.done("QUIT");
+		await this.done(id, "QUIT");
 	}
 
-	async done(result: GameResult) {
+	async done(id: bigint, result: GameResult) {
 		await db.game.update({
-			where: { activeUserId: BigInt(this.current!.user.id) },
+			where: { activeUserId: id },
 			data: {
 				activeUserId: null,
 				endTime: new Date(),
