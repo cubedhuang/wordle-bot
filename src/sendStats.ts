@@ -9,9 +9,10 @@ import {
 	User
 } from "discord.js";
 
-import { db } from "./db";
-import { buildStatsGuessesImage, buildStatsImage } from "./image";
-import { count, reply, takeTopCounts } from "./util";
+import { db } from "./db.js";
+import { buildStatsImage } from "./image/stats.js";
+import { buildStatsGuessesImage } from "./image/statsGuesses.js";
+import { count, reply, takeTopCounts } from "./util.js";
 
 enum StatsView {
 	General = "General",

@@ -10,9 +10,9 @@ import {
 	time
 } from "discord.js";
 
-import { db } from "./db";
-import { buildGameImage } from "./image";
-import { reply } from "./util";
+import { db } from "./db.js";
+import { buildGameImage } from "./image/game.js";
+import { reply } from "./util.js";
 
 const buttonRow = (page: number, maxPage: number) =>
 	new ActionRowBuilder<ButtonBuilder>().addComponents(

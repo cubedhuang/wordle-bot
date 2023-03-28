@@ -5,11 +5,11 @@ import {
 	EmbedBuilder
 } from "discord.js";
 
-import { db } from "./db";
-import { getUser } from "./dbUtils";
-import { buildGameImage } from "./image";
-import { command, range, reply } from "./util";
-import { isWordleWord } from "./wordle";
+import { db } from "./db.js";
+import { getUser } from "./dbUtils.js";
+import { buildGameImage } from "./image/game.js";
+import { command, range, reply } from "./util.js";
+import { isWordleWord } from "./wordle/index.js";
 
 function buildRow(target: string, guess: string) {
 	const row: string[] = [];

@@ -1,4 +1,4 @@
-import { words } from "./words";
+import { words } from "./words.js";
 
 const set = new Set([...words.answers, ...words.dictionary]);
 

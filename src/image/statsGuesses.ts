@@ -1,6 +1,6 @@
 import { Canvas, Image } from "@napi-rs/canvas";
 
-import { FONT_FAMILY, FONT_FAMILY_MONO, GREEN } from "./constants";
+import { FONT_FAMILY, FONT_FAMILY_MONO, GREEN } from "./constants.js";
 
 const IMAGE_SCALE = 5;
 

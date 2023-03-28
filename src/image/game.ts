@@ -1,6 +1,6 @@
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 
-import { range } from "../util";
+import { range } from "../util.js";
 import {
 	DARK_GRAY,
 	FONT_FAMILY,
@@ -8,7 +8,7 @@ import {
 	GREEN,
 	LIGHT_GRAY,
 	YELLOW
-} from "./constants";
+} from "./constants.js";
 
 const keys = [
 	["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],

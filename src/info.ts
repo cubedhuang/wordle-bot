@@ -1,6 +1,6 @@
 import { Client, EmbedBuilder } from "discord.js";
 
-import { command } from "./util";
+import { command } from "./util.js";
 
 export const helpEmbed = async (c: Client) =>
 	new EmbedBuilder()

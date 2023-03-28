@@ -7,11 +7,11 @@ import {
 	Collection
 } from "discord.js";
 
-import { Game } from "./Game";
-import { helpEmbed, rulesEmbed } from "./info";
-import { sendHistory, sendHistoryPage } from "./sendHistory";
-import { sendGeneralStats, sendSpecificStats } from "./sendStats";
-import { isDev, reply } from "./util";
+import { Game } from "./Game.js";
+import { helpEmbed, rulesEmbed } from "./info.js";
+import { sendHistory, sendHistoryPage } from "./sendHistory.js";
+import { sendGeneralStats, sendSpecificStats } from "./sendStats.js";
+import { isDev, reply } from "./util.js";
 
 process.on("uncaughtException", err => {
 	console.error("Uncaught", err);

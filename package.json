@@ -6,11 +6,11 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
-		"start": "node --no-warnings --es-module-specifier-resolution=node ./build/src/index.js",
+		"start": "node ./build/src/index.js",
 		"build": "tsc",
 		"dev": "yarn build && yarn start -- dev",
-		"register": "yarn build && node --no-warnings --es-module-specifier-resolution=node ./build/register/index.js",
-		"register-dev": "yarn build && node --no-warnings --es-module-specifier-resolution=node ./build/register/index.js -- dev"
+		"register": "yarn build && node ./build/register/index.js",
+		"register-dev": "yarn build && node ./build/register/index.js -- dev"
 	},
 	"dependencies": {
 		"@discordjs/rest": "^1.2.0",

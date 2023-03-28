@@ -1,5 +1,5 @@
-import { db } from "./db";
-import { getRandomWordleAnswer } from "./wordle";
+import { db } from "./db.js";
+import { getRandomWordleAnswer } from "./wordle/index.js";
 
 export async function getUser(id: bigint) {
 	const user = await db.user.upsert({

@@ -1,7 +1,7 @@
 import { Canvas } from "@napi-rs/canvas";
 
-import { range } from "../util";
-import { DARK_GRAY, FONT_FAMILY, GRAY, GREEN } from "./constants";
+import { range } from "../util.js";
+import { DARK_GRAY, FONT_FAMILY, GRAY, GREEN } from "./constants.js";
 
 const canvas = new Canvas(500, 300);
 const ctx = canvas.getContext("2d");
