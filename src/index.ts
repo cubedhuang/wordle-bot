@@ -75,7 +75,15 @@ client.on("interactionCreate", async i => {
 
 	if (!i.isChatInputCommand()) return;
 
-	await commands[i.commandName]?.(i);
+	await commands[i.commandName]?.(i).catch(err => {
+		console.error(err);
+		if (i.replied || i.deferred) return;
+
+		i.reply({
+			content: "An error occurred. Please try again later.",
+			ephemeral: true
+		});
+	});
 });
 
 await client.login(isDev ? process.env.TOKEN_DEV : process.env.TOKEN);
