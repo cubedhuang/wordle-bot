@@ -4,7 +4,7 @@ import { FONT_FAMILY, FONT_FAMILY_MONO, GREEN } from "./constants";
 
 const IMAGE_SCALE = 5;
 
-const MAX_BAR_WIDTH = 232;
+const MAX_BAR_WIDTH = 180;
 const MIN_BAR_WIDTH = 28;
 const BAR_END = 352;
 const TOP_TOTAL_START = 30;

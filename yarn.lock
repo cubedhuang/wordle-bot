@@ -91,22 +91,22 @@
     "@napi-rs/canvas-linux-x64-musl" "0.1.30"
     "@napi-rs/canvas-win32-x64-msvc" "0.1.30"
 
-"@prisma/client@^4.4.0":
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-4.4.0.tgz#45f59c172dd3621ecc92d7cf9bc765d85e6c7d56"
-  integrity sha512-ciKOP246x1xwr04G9ajHlJ4pkmtu9Q6esVyqVBO0QJihaKQIUvbPjClp17IsRJyxqNpFm4ScbOc/s9DUzKHINQ==
+"@prisma/client@^4.11.0":
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-4.11.0.tgz#41d5664dea4172c954190a432f70b86d3e2e629b"
+  integrity sha512-0INHYkQIqgAjrt7NzhYpeDQi8x3Nvylc2uDngKyFDDj1tTRQ4uV1HnVmd1sQEraeVAN63SOK0dgCKQHlvjL0KA==
   dependencies:
-    "@prisma/engines-version" "4.4.0-66.f352a33b70356f46311da8b00d83386dd9f145d6"
+    "@prisma/engines-version" "4.11.0-57.8fde8fef4033376662cad983758335009d522acb"
 
-"@prisma/engines-version@4.4.0-66.f352a33b70356f46311da8b00d83386dd9f145d6":
-  version "4.4.0-66.f352a33b70356f46311da8b00d83386dd9f145d6"
-  resolved "https://registry.yarnpkg.com/@prisma/engines-version/-/engines-version-4.4.0-66.f352a33b70356f46311da8b00d83386dd9f145d6.tgz#00875863bb30b670a586a5b5794a000f7f3ad976"
-  integrity sha512-P5v/PuEIJLYXZUZBvOLPqoyCW+m6StNqHdiR6te++gYVODpPdLakks5HVx3JaZIY+LwR02juJWFlwpc9Eog/ug==
+"@prisma/engines-version@4.11.0-57.8fde8fef4033376662cad983758335009d522acb":
+  version "4.11.0-57.8fde8fef4033376662cad983758335009d522acb"
+  resolved "https://registry.yarnpkg.com/@prisma/engines-version/-/engines-version-4.11.0-57.8fde8fef4033376662cad983758335009d522acb.tgz#74af5ff56170c78e93ce46c56510160f58cd3c01"
+  integrity sha512-3Vd8Qq06d5xD8Ch5WauWcUUrsVPdMC6Ge8ILji8RFfyhUpqon6qSyGM0apvr1O8n8qH8cKkEFqRPsYjuz5r83g==
 
-"@prisma/engines@4.4.0":
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/@prisma/engines/-/engines-4.4.0.tgz#6ca7d3ce8eee08dcfa82311b0a02f5ccaac7dc0c"
-  integrity sha512-Fpykccxlt9MHrAs/QpPGpI2nOiRxuLA+LiApgA59ibbf24YICZIMWd3SI2YD+q0IAIso0jCGiHhirAIbxK3RyQ==
+"@prisma/engines@4.11.0":
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/@prisma/engines/-/engines-4.11.0.tgz#c99749bfe20f58e8f4d2b5e04fee0785eba440e1"
+  integrity sha512-0AEBi2HXGV02cf6ASsBPhfsVIbVSDC9nbQed4iiY5eHttW9ZtMxHThuKZE1pnESbr8HRdgmFSa/Kn4OSNYuibg==
 
 "@sapphire/async-queue@^1.5.0":
   version "1.5.0"
@@ -219,12 +219,12 @@ peek-readable@^5.0.0:
   resolved "https://registry.yarnpkg.com/peek-readable/-/peek-readable-5.0.0.tgz#7ead2aff25dc40458c60347ea76cfdfd63efdfec"
   integrity sha512-YtCKvLUOvwtMGmrniQPdO7MwPjgkFBtFIrmfSbYmYuq3tKDV/mcfAhBth1+C3ru7uXIZasc/pHnb+YDYNkkj4A==
 
-prisma@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/prisma/-/prisma-4.4.0.tgz#0c53324bf6a29474636b3e1964e0d72e0277bf8f"
-  integrity sha512-l/QKLmLcKJQFuc+X02LyICo0NWTUVaNNZ00jKJBqwDyhwMAhboD1FWwYV50rkH4Wls0RviAJSFzkC2ZrfawpfA==
+prisma@^4.11.0:
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/prisma/-/prisma-4.11.0.tgz#9695ba4129a43eab3e76b5f7a033c6c020377725"
+  integrity sha512-4zZmBXssPUEiX+GeL0MUq/Yyie4ltiKmGu7jCJFnYMamNrrulTBc+D+QwAQSJ01tyzeGHlD13kOnqPwRipnlNw==
   dependencies:
-    "@prisma/engines" "4.4.0"
+    "@prisma/engines" "4.11.0"
 
 readable-stream@^3.6.0:
   version "3.6.0"

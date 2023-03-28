@@ -266,37 +266,66 @@ async function createPersonalGuessesStats({
 }
 
 async function createGlobalGuessesStats(): Promise<StatsOutput> {
-	const games = await db.game.findMany({
-		where: { result: { not: "PLAYING" } },
-		include: { guesses: true }
+	const totalGuesses = await db.guess.count({
+		where: { game: { result: { not: "PLAYING" } } }
 	});
 
-	// TODO: calculate on the database side
+	const image = buildStatsGuessesImage({
+		topTotal: (
+			await db.guess.groupBy({
+				where: { game: { result: { not: "PLAYING" } } },
+				by: ["guess"],
+				_count: { guess: true },
+				orderBy: { _count: { guess: "desc" } },
+				take: 10
+			})
+		).map(g => [g.guess, g._count.guess]),
 
-	const guesses = games
-		.map(game => game.guesses)
-		.flat()
-		.map(g => g.guess);
-	const firstGuesses = games
-		.map(game => game.guesses[0]?.guess)
-		.filter(g => !!g);
+		// same as topTotal but only for the first guess of each game
+		topFirst: (
+			(await db.$queryRaw`
+				SELECT guess, COUNT(guess) AS count
+				FROM "Guess"
+				WHERE "gameId" IN (
+					SELECT id
+					FROM "Game"
+					WHERE result != 'PLAYING'
+				)
+				AND id IN (
+					SELECT MIN(id)
+					FROM "Guess"
+					GROUP BY "gameId"
+				)
+				GROUP BY guess
+				ORDER BY count DESC
+				LIMIT 10
+			`) as { guess: string; count: bigint }[]
+		).map(g => [g.guess, Number(g.count)]),
+
+		total: totalGuesses,
+
+		// prisma count doesn't support DISTINCT
+		unique: Number(
+			(
+				(await db.$queryRaw`SELECT COUNT(DISTINCT guess) FROM "Guess"`) as {
+					count: bigint;
+				}[]
+			)[0].count
+		),
+
+		perGame:
+			totalGuesses /
+			(await db.game.count({ where: { result: { not: "PLAYING" } } })),
+
+		perWin:
+			(await db.guess.count({
+				where: { game: { result: "WIN" } }
+			})) / (await db.game.count({ where: { result: "WIN" } }))
+	});
 
 	const embed = new EmbedBuilder()
 		.setTitle("Global Wordle Statistics: Guesses")
 		.setImage("attachment://stats.webp");
-
-	const wonGames = games.filter(game => game.result === "WIN");
-
-	const image = buildStatsGuessesImage({
-		topTotal: takeTopCounts(guesses, 10),
-		topFirst: takeTopCounts(firstGuesses, 10),
-		total: guesses.length,
-		unique: new Set(guesses).size,
-		perGame: guesses.length / games.length,
-		perWin:
-			wonGames.reduce((sum, game) => sum + game.guesses.length, 0) /
-			wonGames.length
-	});
 
 	return {
 		embed,
