@@ -1,10 +1,10 @@
 import { formatDistanceStrict } from "date-fns";
+import { ButtonStyle } from "discord-api-types/v10";
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonInteraction,
-	ButtonStyle,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 	time

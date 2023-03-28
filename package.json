@@ -13,16 +13,18 @@
 		"register-dev": "yarn build && node ./build/register/index.js -- dev"
 	},
 	"dependencies": {
-		"@discordjs/rest": "^1.2.0",
-		"@napi-rs/canvas": "^0.1.30",
-		"@prisma/client": "^4.11.0",
+		"@discordjs/builders": "^1.5.0",
+		"@discordjs/rest": "^1.6.0",
+		"@napi-rs/canvas": "^0.1.39",
+		"@prisma/client": "^4.12.0",
 		"date-fns": "^2.29.3",
-		"discord.js": "^14.5.0",
-		"dotenv": "^16.0.1"
+		"discord-api-types": "^0.37.37",
+		"discord.js": "^14.8.0",
+		"dotenv": "^16.0.3"
 	},
 	"devDependencies": {
-		"@types/node": "^17.0.36",
-		"prisma": "^4.11.0",
-		"typescript": "^4.8.4"
+		"@types/node": "^18.15.10",
+		"prisma": "^4.12.0",
+		"typescript": "^5.0.2"
 	}
 }

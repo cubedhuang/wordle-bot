@@ -1,11 +1,13 @@
 import {
+	SelectMenuBuilder,
+	SelectMenuOptionBuilder
+} from "@discordjs/builders";
+import {
 	ActionRowBuilder,
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
-	SelectMenuBuilder,
-	SelectMenuInteraction,
-	SelectMenuOptionBuilder,
+	StringSelectMenuInteraction,
 	User
 } from "discord.js";
 
@@ -33,13 +35,13 @@ const statsOptions = (id: string, value: StatsView) =>
 		new SelectMenuOptionBuilder()
 			.setLabel("Personal Guesses")
 			.setDescription("Statistics about your guesses.")
-			.setEmoji("📊")
+			.setEmoji({ name: "📊" })
 			.setValue(StatsView.PersonalGuesses)
 			.setDefault(value === StatsView.PersonalGuesses),
 		new SelectMenuOptionBuilder()
 			.setLabel("Global Guesses")
 			.setDescription("Statistics about all guesses made by everyone.")
-			.setEmoji("🌎")
+			.setEmoji({ name: "🌎" })
 			.setValue(StatsView.GlobalGuesses)
 			.setDefault(value === StatsView.GlobalGuesses)
 	]);
@@ -92,7 +94,7 @@ const specificStatsEmbeds: Record<
 	[StatsView.GlobalGuesses]: createGlobalGuessesStats
 };
 
-export async function sendSpecificStats(i: SelectMenuInteraction) {
+export async function sendSpecificStats(i: StringSelectMenuInteraction) {
 	if (i.user.id !== i.message.interaction?.user.id) {
 		await i.reply({
 			content: "You didn't send this command!",

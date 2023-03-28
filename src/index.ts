@@ -1,11 +1,6 @@
 import "dotenv/config";
 
-import {
-	ActivityType,
-	ChatInputCommandInteraction,
-	Client,
-	Collection
-} from "discord.js";
+import { ChatInputCommandInteraction, Client, Collection } from "discord.js";
 
 import { Game } from "./Game.js";
 import { helpEmbed, rulesEmbed } from "./info.js";
@@ -27,7 +22,7 @@ const client = new Client({
 		repliedUser: false
 	},
 	presence: {
-		activities: [{ name: "/wordle", type: ActivityType.Playing }]
+		activities: [{ name: "/wordle" }]
 	}
 });
 
@@ -41,7 +36,7 @@ client.on("ready", client => {
 	console.log(`Logged in as ${client.user.tag}!`);
 
 	setInterval(() => {
-		client.user.setActivity("/wordle", { type: ActivityType.Playing });
+		client.user.setActivity("/wordle");
 	}, 1000 * 60 * 30);
 });
 
@@ -75,7 +70,7 @@ const commands: Record<
 };
 
 client.on("interactionCreate", async i => {
-	if (i.isSelectMenu()) return await sendSpecificStats(i);
+	if (i.isStringSelectMenu()) return await sendSpecificStats(i);
 	if (i.isButton()) return await sendHistoryPage(i);
 
 	if (!i.isChatInputCommand()) return;

@@ -7,7 +7,7 @@ import {
 	EmbedBuilder,
 	GuildResolvable,
 	InteractionReplyOptions,
-	SelectMenuInteraction
+	StringSelectMenuInteraction
 } from "discord.js";
 
 export const isDev = process.argv.includes("dev");
@@ -47,7 +47,7 @@ export function takeTopCounts(values: string[], n: number): [string, number][] {
 }
 
 export function reply(
-	i: ButtonInteraction | CommandInteraction | SelectMenuInteraction,
+	i: ButtonInteraction | CommandInteraction | StringSelectMenuInteraction,
 	content: string | EmbedBuilder,
 	options?: InteractionReplyOptions
 ) {
