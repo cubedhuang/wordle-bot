@@ -1,6 +1,13 @@
 import "dotenv/config";
 
-import { ChatInputCommandInteraction, Client, Collection } from "discord.js";
+import {
+	ChatInputCommandInteraction,
+	Client,
+	Collection,
+	EmbedBuilder,
+	WebhookClient
+} from "discord.js";
+import { inspect } from "node:util";
 
 import { Game } from "./Game.js";
 import { helpEmbed, rulesEmbed } from "./info.js";
@@ -25,6 +32,8 @@ const client = new Client({
 		activities: [{ name: "/wordle" }]
 	}
 });
+
+const webhook = new WebhookClient({ url: process.env.WEBHOOK_URL! });
 
 const games = new Collection<string, Game>();
 
@@ -77,6 +86,28 @@ client.on("interactionCreate", async i => {
 
 	await commands[i.commandName]?.(i).catch(err => {
 		console.error(err);
+
+		webhook.send({
+			embeds: [
+				new EmbedBuilder()
+					.setTitle("Error")
+					.setDescription(`\`\`\`js\n${inspect(err)}\n\`\`\``)
+					.setFields(
+						{
+							name: "Command",
+							value: i.toString(),
+							inline: true
+						},
+						{
+							name: "User",
+							value: i.user.toString(),
+							inline: true
+						}
+					)
+					.setTimestamp()
+			]
+		});
+
 		if (i.replied || i.deferred) return;
 
 		i.reply({
