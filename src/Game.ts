@@ -101,8 +101,11 @@ export class Game {
 			return;
 		}
 
-		this.current?.deleteReply();
-		this.current = i;
+		try {
+			this.current?.deleteReply();
+		} finally {
+			this.current = i;
+		}
 
 		await db.guess.create({
 			data: {
