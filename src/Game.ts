@@ -125,7 +125,7 @@ export class Game {
 			// Win condition
 			guess === game.target ||
 			// Lose condition
-			game.guesses!.length === 5
+			game.guesses!.length >= 5
 		) {
 			const win = guess === game.target;
 
