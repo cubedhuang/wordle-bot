@@ -85,7 +85,7 @@ export class Game {
 		const user = await getUser(id);
 		const game = user.activeGame!;
 
-		const guess = i.options.getString("guess", true);
+		const guess = i.options.getString("guess", true).toLowerCase();
 
 		if (guess.length !== 5) {
 			await reply(i, "Guesses must be 5 letters long!", {
