@@ -40,6 +40,8 @@ export function buildGameImage(
 	guesses: string[],
 	keyboard = true
 ) {
+	guesses = guesses.map(guess => guess.toLowerCase());
+
 	const canvas = keyboard ? fullCanvas : shortCanvas;
 	const ctx = keyboard ? fullCtx : shortCtx;
 
