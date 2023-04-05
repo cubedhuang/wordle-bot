@@ -58,20 +58,32 @@ export function buildStatsImage(data: BuildStatsData) {
 			canvas.width / 2 + statOffset
 		);
 	} else {
-		const statOffset = 150;
+		const statOffset = 180;
 
 		renderStat(
 			data.started,
 			"Games\nStarted",
-			canvas.width / 2 - statOffset
+			canvas.width / 2 - statOffset,
+			true
 		);
-		renderStat(data.wins, "Games\nWon", canvas.width / 2 - statOffset / 3);
+		renderStat(
+			data.wins,
+			"Games\nWon",
+			canvas.width / 2 - statOffset / 3,
+			true
+		);
 		renderStat(
 			data.losses,
 			"Games\nLost",
-			canvas.width / 2 + statOffset / 3
+			canvas.width / 2 + statOffset / 3,
+			true
 		);
-		renderStat(data.quits, "Games\nQuit", canvas.width / 2 + statOffset);
+		renderStat(
+			data.quits,
+			"Games\nQuit",
+			canvas.width / 2 + statOffset,
+			true
+		);
 	}
 
 	ctx.font = `bold 16px ${FONT_FAMILY}`;
@@ -93,7 +105,7 @@ export function buildStatsImage(data: BuildStatsData) {
 		ctx.fillRect(
 			canvas.width / 2 - barOffset + labelSpace,
 			y,
-			Math.max(bars[i] * scale, 30),
+			Math.max(bars[i] * scale, 45),
 			18
 		);
 
@@ -107,7 +119,7 @@ export function buildStatsImage(data: BuildStatsData) {
 			`${bars[i]}`,
 			Math.max(
 				canvas.width / 2 - barOffset + labelSpace + bars[i] * scale - 8,
-				canvas.width / 2 - barOffset + labelSpace + 22
+				canvas.width / 2 - barOffset + labelSpace + 37
 			),
 			y + 2
 		);
@@ -116,13 +128,18 @@ export function buildStatsImage(data: BuildStatsData) {
 	return canvas.toBuffer("image/webp");
 }
 
-function renderStat(value: number, label: string, x: number) {
+function renderStat(value: number, label: string, x: number, small = false) {
 	ctx.textBaseline = "top";
 	ctx.textAlign = "center";
 	ctx.fillStyle = "white";
 
-	ctx.font = `bold 36px ${FONT_FAMILY}`;
-	ctx.fillText(`${value}`, x, 20);
+	if (!small) {
+		ctx.font = `bold 36px ${FONT_FAMILY}`;
+		ctx.fillText(`${value}`, x, 20);
+	} else {
+		ctx.font = `bold 26px ${FONT_FAMILY}`;
+		ctx.fillText(`${value}`, x, 26);
+	}
 
 	ctx.font = `normal 12px ${FONT_FAMILY}`;
 	let y = 60;
