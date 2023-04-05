@@ -115,8 +115,7 @@ client.on(Events.InteractionCreate, async i => {
 
 		if (i.replied || i.deferred) return;
 
-		i.reply({
-			content: "An error occurred. Please try again later.",
+		reply(i, "An error occurred. Please try again later.", {
 			ephemeral: true
 		});
 	});

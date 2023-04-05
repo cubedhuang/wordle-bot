@@ -58,8 +58,7 @@ export async function sendHistory(i: ChatInputCommandInteraction) {
 
 export async function sendHistoryPage(i: ButtonInteraction) {
 	if (i.user.id !== i.message.interaction?.user.id) {
-		await i.reply({
-			content: "You didn't send this command!",
+		await reply(i, "You didn't send this command!", {
 			ephemeral: true
 		});
 		return;

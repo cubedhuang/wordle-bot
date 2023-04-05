@@ -114,8 +114,7 @@ const specificStatsEmbeds: Record<
 
 export async function sendSpecificStats(i: StringSelectMenuInteraction) {
 	if (i.user.id !== i.message.interaction?.user.id) {
-		await i.reply({
-			content: "You didn't send this command!",
+		await reply(i, "You didn't send this command!", {
 			ephemeral: true
 		});
 		return;
