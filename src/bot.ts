@@ -1,12 +1,16 @@
 import "dotenv/config";
 
+import { CaptureConsole } from "@sentry/integrations";
+import * as Sentry from "@sentry/node";
 import {
+	ButtonInteraction,
 	ChatInputCommandInteraction,
 	Client,
 	Collection,
 	EmbedBuilder,
 	Events,
 	GatewayIntentBits,
+	StringSelectMenuInteraction,
 	WebhookClient
 } from "discord.js";
 import { inspect } from "node:util";
@@ -22,6 +26,13 @@ process.on("uncaughtException", err => {
 });
 process.on("unhandledRejection", err => {
 	console.error("Unhandled", err);
+});
+
+Sentry.init({
+	dsn: process.env.SENTRY_DSN,
+	environment: isDev ? "development" : "production",
+	integrations: [new CaptureConsole({ levels: ["warn", "error"] })],
+	tracesSampleRate: 1.0
 });
 
 const client = new Client({
@@ -80,45 +91,91 @@ const commands: Record<
 	history: sendHistory
 };
 
-client.on(Events.InteractionCreate, async i => {
-	if (i.isStringSelectMenu()) return await sendSpecificStats(i);
-	if (i.isButton()) return await sendHistoryPage(i);
+function handleInteractionError(
+	i:
+		| ChatInputCommandInteraction
+		| StringSelectMenuInteraction
+		| ButtonInteraction,
+	err: unknown
+) {
+	Sentry.captureException(err);
 
-	if (!i.isChatInputCommand()) return;
-
-	await commands[i.commandName]?.(i).catch(err => {
-		console.error(err);
-
-		webhook.send({
-			embeds: [
-				new EmbedBuilder()
-					.setTitle("Error")
-					.setDescription(`\`\`\`js\n${inspect(err)}\n\`\`\``)
-					.setFields(
-						{
-							name: "Command",
-							value: i.toString(),
-							inline: true
-						},
-						{
-							name: "User",
-							value: i.user.toString(),
-							inline: true
-						}
-					)
-					.setTimestamp()
-			],
-			username: client.user?.username,
-			avatarURL: client.user?.displayAvatarURL(),
-			allowedMentions: {}
-		});
-
-		if (i.replied || i.deferred) return;
-
-		reply(i, "An error occurred. Please try again later.", {
-			ephemeral: true
-		});
+	webhook.send({
+		embeds: [
+			new EmbedBuilder()
+				.setTitle("Error")
+				.setDescription(`\`\`\`js\n${inspect(err)}\n\`\`\``)
+				.setFields(
+					{
+						name: "Command",
+						value: i.toString(),
+						inline: true
+					},
+					{
+						name: "User",
+						value: i.user.toString(),
+						inline: true
+					}
+				)
+				.setTimestamp()
+		],
+		username: client.user?.username,
+		avatarURL: client.user?.displayAvatarURL(),
+		allowedMentions: {}
 	});
+
+	if (i.replied || i.deferred) return;
+
+	reply(i, "An error occurred. Please try again later.", {
+		ephemeral: true
+	});
+}
+
+client.on(Events.InteractionCreate, async i => {
+	if (i.isStringSelectMenu()) {
+		const transaction = Sentry.startTransaction({
+			op: "select",
+			name: `stats:${i.customId}`,
+			data: { user: i.user.id }
+		});
+
+		await sendSpecificStats(i).catch(err => handleInteractionError(i, err));
+
+		transaction.finish();
+
+		return;
+	}
+
+	if (i.isButton()) {
+		const transaction = Sentry.startTransaction({
+			op: "button",
+			name: "history",
+			data: { user: i.user.id, page: i.customId }
+		});
+
+		await sendHistoryPage(i).catch(err => handleInteractionError(i, err));
+
+		transaction.finish();
+
+		return;
+	}
+
+	if (!i.isChatInputCommand() || !commands[i.commandName]) return;
+
+	const transaction = Sentry.startTransaction({
+		op: "command",
+		name: i.commandName,
+		data: {
+			user: i.user.id,
+			args: i.options.data.map(o => `${o.name}: ${o.value}`)
+		}
+	});
+
+	await commands[i.commandName](i).catch(err =>
+		handleInteractionError(i, err)
+	);
+
+	transaction.finish();
 });
 
 await client.login(isDev ? process.env.TOKEN_DEV : process.env.TOKEN);
