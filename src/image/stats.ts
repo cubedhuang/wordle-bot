@@ -14,8 +14,8 @@ interface BuildStatsData {
 	wins: number;
 	losses: number;
 	quits: number;
-	streak: number;
-	maxStreak: number;
+	streak?: number;
+	maxStreak?: number;
 	dist: number[];
 }
 
@@ -23,23 +23,56 @@ export function buildStatsImage(data: BuildStatsData) {
 	ctx.fillStyle = DARK_GRAY;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-	// Distance from the center of the first stat to the vertical center.
-	const statOffset = 200;
+	if (data.streak !== undefined && data.maxStreak !== undefined) {
+		// Distance from the center of the first stat to the vertical center.
+		const statOffset = 200;
 
-	renderStat(data.started, "Games\nStarted", canvas.width / 2 - statOffset);
-	renderStat(
-		data.wins,
-		"Games\nWon",
-		canvas.width / 2 - (statOffset * 3) / 5
-	);
-	renderStat(data.losses, "Games\nLost", canvas.width / 2 - statOffset / 5);
-	renderStat(data.quits, "Games\nQuit", canvas.width / 2 + statOffset / 5);
-	renderStat(
-		data.streak,
-		"Current\nStreak",
-		canvas.width / 2 + (statOffset * 3) / 5
-	);
-	renderStat(data.maxStreak, "Max\nStreak", canvas.width / 2 + statOffset);
+		renderStat(
+			data.started,
+			"Games\nStarted",
+			canvas.width / 2 - statOffset
+		);
+		renderStat(
+			data.wins,
+			"Games\nWon",
+			canvas.width / 2 - (statOffset * 3) / 5
+		);
+		renderStat(
+			data.losses,
+			"Games\nLost",
+			canvas.width / 2 - statOffset / 5
+		);
+		renderStat(
+			data.quits,
+			"Games\nQuit",
+			canvas.width / 2 + statOffset / 5
+		);
+		renderStat(
+			data.streak,
+			"Current\nStreak",
+			canvas.width / 2 + (statOffset * 3) / 5
+		);
+		renderStat(
+			data.maxStreak,
+			"Max\nStreak",
+			canvas.width / 2 + statOffset
+		);
+	} else {
+		const statOffset = 150;
+
+		renderStat(
+			data.started,
+			"Games\nStarted",
+			canvas.width / 2 - statOffset
+		);
+		renderStat(data.wins, "Games\nWon", canvas.width / 2 - statOffset / 3);
+		renderStat(
+			data.losses,
+			"Games\nLost",
+			canvas.width / 2 + statOffset / 3
+		);
+		renderStat(data.quits, "Games\nQuit", canvas.width / 2 + statOffset);
+	}
 
 	ctx.font = `bold 16px ${FONT_FAMILY}`;
 	ctx.fillText("GUESS DISTRIBUTION", canvas.width / 2, 125);

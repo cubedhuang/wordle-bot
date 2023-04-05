@@ -1,11 +1,13 @@
 import {
 	SelectMenuBuilder,
-	SelectMenuOptionBuilder
+	SelectMenuOptionBuilder,
+	time
 } from "@discordjs/builders";
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
 	ChatInputCommandInteraction,
+	Client,
 	EmbedBuilder,
 	StringSelectMenuInteraction,
 	User
@@ -18,8 +20,10 @@ import { count, reply, takeTopCounts } from "./util.js";
 
 enum StatsView {
 	General = "General",
+	Global = "Global",
 	PersonalGuesses = "PersonalGuesses",
-	GlobalGuesses = "GlobalGuesses"
+	GlobalGuesses = "GlobalGuesses",
+	BotStats = "BotStats"
 }
 
 const statsOptions = (id: string, value: StatsView) =>
@@ -33,6 +37,12 @@ const statsOptions = (id: string, value: StatsView) =>
 			.setEmoji({ name: "wordle", id: "1025939109329514546" })
 			.setDefault(value === StatsView.General),
 		new SelectMenuOptionBuilder()
+			.setLabel("Global")
+			.setDescription("Global statistics including everyone's games.")
+			.setValue(StatsView.Global)
+			.setEmoji({ name: "🌏" })
+			.setDefault(value === StatsView.Global),
+		new SelectMenuOptionBuilder()
 			.setLabel("Personal Guesses")
 			.setDescription("Statistics about your guesses.")
 			.setEmoji({ name: "📊" })
@@ -43,7 +53,13 @@ const statsOptions = (id: string, value: StatsView) =>
 			.setDescription("Statistics about all guesses made by everyone.")
 			.setEmoji({ name: "🌎" })
 			.setValue(StatsView.GlobalGuesses)
-			.setDefault(value === StatsView.GlobalGuesses)
+			.setDefault(value === StatsView.GlobalGuesses),
+		new SelectMenuOptionBuilder()
+			.setLabel("Bot Stats")
+			.setDescription("Statistics just about the bot.")
+			.setEmoji({ name: "🤖" })
+			.setValue(StatsView.BotStats)
+			.setDefault(value === StatsView.BotStats)
 	]);
 const statsRow = (id: string, value = StatsView.General) =>
 	new ActionRowBuilder<SelectMenuBuilder>().addComponents(
@@ -54,9 +70,9 @@ export async function sendGeneralStats(i: ChatInputCommandInteraction) {
 	const targetUser = i.options.getUser("user") ?? i.user;
 
 	const stats = await createGeneralStats({
+		client: i.client,
 		receiver: i.user,
-		targetId: targetUser.id,
-		targetUsername: targetUser.username
+		target: targetUser
 	});
 
 	if (typeof stats === "string") {
@@ -73,14 +89,14 @@ export async function sendGeneralStats(i: ChatInputCommandInteraction) {
 }
 
 interface StatsInput {
+	client: Client;
 	receiver: User;
-	targetId: string;
-	targetUsername: string;
+	target: User;
 }
 
 interface StatsEmbedInfo {
 	embed: EmbedBuilder;
-	files: AttachmentBuilder[];
+	files?: AttachmentBuilder[];
 }
 
 type StatsOutput = string | StatsEmbedInfo;
@@ -90,8 +106,10 @@ const specificStatsEmbeds: Record<
 	(info: StatsInput) => Promise<StatsOutput>
 > = {
 	[StatsView.General]: createGeneralStats,
+	[StatsView.Global]: createGlobalStats,
 	[StatsView.PersonalGuesses]: createPersonalGuessesStats,
-	[StatsView.GlobalGuesses]: createGlobalGuessesStats
+	[StatsView.GlobalGuesses]: createGlobalGuessesStats,
+	[StatsView.BotStats]: createBotStats
 };
 
 export async function sendSpecificStats(i: StringSelectMenuInteraction) {
@@ -106,11 +124,9 @@ export async function sendSpecificStats(i: StringSelectMenuInteraction) {
 	const targetId = i.customId;
 
 	const stats = await specificStatsEmbeds[i.values[0] as StatsView]({
+		client: i.client,
 		receiver: i.user,
-		targetId,
-		targetUsername: await i.client.users
-			.fetch(targetId)
-			.then(u => u.username)
+		target: await i.client.users.fetch(targetId)
 	});
 
 	if (typeof stats === "string") {
@@ -131,18 +147,17 @@ export async function sendSpecificStats(i: StringSelectMenuInteraction) {
 
 	await i.update({
 		embeds: [embed.setColor("#56a754")],
-		files,
+		files: files ?? [],
 		components: [statsRow(targetId, i.values[0] as StatsView)]
 	});
 }
 
 async function createGeneralStats({
 	receiver,
-	targetId,
-	targetUsername
+	target
 }: StatsInput): Promise<StatsOutput> {
 	const user = await db.user.findUnique({
-		where: { id: BigInt(targetId) },
+		where: { id: BigInt(target.id) },
 		include: {
 			games: {
 				include: {
@@ -156,14 +171,14 @@ async function createGeneralStats({
 
 	if (!user?.games.length) {
 		return `${
-			targetId === receiver.id ? "You haven't" : `<@${targetId}> hasn't`
+			target.id === receiver.id ? "You haven't" : `<@${target.id}> hasn't`
 		} played a game yet!`;
 	}
 
 	const embed = new EmbedBuilder()
 		.setTitle(
 			`${
-				targetId === receiver.id ? "Your" : `${targetUsername}'s`
+				target.id === receiver.id ? "Your" : `${target.username}'s`
 			} Wordle Statistics`
 		)
 		.setImage("attachment://stats.webp");
@@ -205,13 +220,52 @@ async function createGeneralStats({
 	};
 }
 
+async function createGlobalStats(): Promise<StatsOutput> {
+	const embed = new EmbedBuilder()
+		.setTitle("Global Wordle Statistics")
+		.setImage("attachment://stats.webp");
+
+	const image = buildStatsImage({
+		started: await db.game.count(),
+		wins: await db.game.count({ where: { result: "WIN" } }),
+		losses: await db.game.count({ where: { result: "LOSS" } }),
+		quits: await db.game.count({ where: { result: "QUIT" } }),
+
+		dist: (
+			(await db.$queryRaw`
+				SELECT COUNT(*) AS amount, g."guessCount"
+				FROM (
+					SELECT game.id, COUNT(guess.id) AS "guessCount"
+					FROM "Game" game
+					LEFT JOIN "Guess" guess ON game.id = guess."gameId"
+					WHERE game.result = 'WIN'
+					GROUP BY game.id
+				) AS g
+				GROUP BY g."guessCount"
+				ORDER BY g."guessCount"
+			`) as { amount: bigint; guessCount: bigint }[]
+		).reduce(
+			(acc, { amount, guessCount }) => {
+				if (0 < guessCount && guessCount <= 6)
+					acc[Number(guessCount) - 1] = Number(amount);
+				return acc;
+			},
+			[0, 0, 0, 0, 0, 0]
+		)
+	});
+
+	return {
+		embed,
+		files: [new AttachmentBuilder(image).setName("stats.webp")]
+	};
+}
+
 async function createPersonalGuessesStats({
 	receiver,
-	targetId,
-	targetUsername
+	target
 }: StatsInput): Promise<StatsOutput> {
 	const user = await db.user.findUnique({
-		where: { id: BigInt(targetId) },
+		where: { id: BigInt(target.id) },
 		include: {
 			games: { include: { guesses: true } },
 			activeGame: { select: { _count: { select: { guesses: true } } } }
@@ -220,7 +274,7 @@ async function createPersonalGuessesStats({
 
 	if (!user?.games.length) {
 		return `${
-			targetId === receiver.id ? "You haven't" : `<@${targetId}> hasn't`
+			target.id === receiver.id ? "You haven't" : `<@${target.id}> hasn't`
 		} played a game yet!`;
 	}
 
@@ -231,7 +285,7 @@ async function createPersonalGuessesStats({
 
 	if (!guesses.length) {
 		return `${
-			targetId === receiver.id ? "You haven't" : `<@${targetId}> hasn't`
+			target.id === receiver.id ? "You haven't" : `<@${target.id}> hasn't`
 		} made any guesses yet!`;
 	}
 
@@ -242,7 +296,7 @@ async function createPersonalGuessesStats({
 	const embed = new EmbedBuilder()
 		.setTitle(
 			`${
-				targetId === receiver.id ? "Your" : `${targetUsername}'s`
+				target.id === receiver.id ? "Your" : `${target.username}'s`
 			} Wordle Statistics: Guesses`
 		)
 		.setImage("attachment://stats.webp");
@@ -333,5 +387,60 @@ async function createGlobalGuessesStats(): Promise<StatsOutput> {
 	return {
 		embed,
 		files: [new AttachmentBuilder(image).setName("stats.webp")]
+	};
+}
+
+async function createBotStats({ client }: StatsInput): Promise<StatsOutput> {
+	const numberFormat = new Intl.NumberFormat("en-US");
+	const f = (n: number) => numberFormat.format(n);
+
+	const globalServers =
+		(
+			(await client.shard?.fetchClientValues(
+				"guilds.cache.size"
+			)) as number[]
+		)?.reduce((a, b) => a + b, 0) ?? client.guilds.cache.size;
+	const globalUsers =
+		(
+			(await client.shard?.broadcastEval(c =>
+				c.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
+			)) as number[]
+		)?.reduce((a, b) => a + b, 0) ??
+		client.guilds.cache.reduce((a, g) => a + g.memberCount, 0);
+
+	const shardServers = client.guilds.cache.size;
+	const shardUsers = client.guilds.cache.reduce(
+		(a, g) => a + g.memberCount,
+		0
+	);
+
+	return {
+		embed: new EmbedBuilder()
+			.setTitle("Bot Statistics")
+			.setFields(
+				{
+					name: "Global",
+					value: `
+Shards: ${client.shard?.count ?? 1}
+Servers: ${f(globalServers)}
+Users: ${f(globalUsers)}
+`.trim(),
+					inline: true
+				},
+				{
+					name: `Shard`,
+					value: `
+ID: ${client.shard?.ids[0] ?? 0}
+Servers: ${f(shardServers)}
+Users: ${f(shardUsers)}
+`.trim(),
+					inline: true
+				},
+				{
+					name: "Session Started",
+					value: time(client.readyAt ?? new Date(), "R")
+				}
+			)
+			.setThumbnail(client.user?.displayAvatarURL({ size: 512 }) ?? "")
 	};
 }
