@@ -135,7 +135,7 @@ client.on(Events.InteractionCreate, async i => {
 	if (i.isStringSelectMenu()) {
 		const transaction = Sentry.startTransaction({
 			op: "select",
-			name: `stats:${i.customId}`,
+			name: `stats:${i.values[0]}`,
 			data: { user: i.user.id }
 		});
 
