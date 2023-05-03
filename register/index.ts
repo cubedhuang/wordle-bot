@@ -50,6 +50,11 @@ const commands = [
 		.setDescription("Browse through your past games.")
 ];
 
+for (const command of commands) {
+	// @ts-expect-error
+	command.contexts = [0, 1, 2];
+}
+
 const rest = new REST().setToken(token!);
 
 console.log("Started refreshing interactions.");
