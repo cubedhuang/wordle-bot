@@ -57,7 +57,7 @@ export function reply(
 			: content.setColor("#56a754");
 
 	if (i.deferred) {
-		return i.followUp({ embeds: [embed], ...options });
+		return i.editReply({ embeds: [embed], ...options });
 	} else {
 		return i.reply({ embeds: [embed], ...options });
 	}
