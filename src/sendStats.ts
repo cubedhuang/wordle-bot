@@ -67,6 +67,8 @@ const statsRow = (id: string, value = StatsView.General) =>
 	);
 
 export async function sendGeneralStats(i: ChatInputCommandInteraction) {
+	await i.deferReply();
+
 	const targetUser = i.options.getUser("user") ?? i.user;
 
 	const stats = await createGeneralStats({
@@ -119,6 +121,8 @@ export async function sendSpecificStats(i: StringSelectMenuInteraction) {
 		});
 		return;
 	}
+
+	await i.deferUpdate();
 
 	const targetId = i.customId;
 

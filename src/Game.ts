@@ -50,6 +50,8 @@ export class Game {
 	async wordle(i: ChatInputCommandInteraction) {
 		this.current = i;
 
+		await i.deferReply();
+
 		const user = await getUser(BigInt(i.user.id));
 
 		await reply(
@@ -81,10 +83,6 @@ export class Game {
 	}
 
 	async guess(i: ChatInputCommandInteraction) {
-		const id = BigInt(i.user.id);
-		const user = await getUser(id);
-		const game = user.activeGame!;
-
 		const guess = i.options.getString("guess", true).toLowerCase();
 
 		if (guess.length !== 5) {
@@ -101,11 +99,17 @@ export class Game {
 			return;
 		}
 
+		const id = BigInt(i.user.id);
+		const user = await getUser(id);
+		const game = user.activeGame!;
+
 		try {
 			this.current?.deleteReply();
 		} finally {
 			this.current = i;
 		}
+
+		await i.deferReply();
 
 		await db.guess.create({
 			data: {

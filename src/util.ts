@@ -51,16 +51,15 @@ export function reply(
 	content: string | EmbedBuilder,
 	options?: InteractionReplyOptions
 ) {
-	if (typeof content === "string") {
-		return i.reply({
-			embeds: [{ color: 0x56a754, description: content }],
-			...options
-		});
+	const embed =
+		typeof content === "string"
+			? { color: 0x56a754, description: content }
+			: content.setColor("#56a754");
+
+	if (i.deferred) {
+		return i.followUp({ embeds: [embed], ...options });
 	} else {
-		return i.reply({
-			embeds: [content.setColor("#56a754")],
-			...options
-		});
+		return i.reply({ embeds: [embed], ...options });
 	}
 }
 
