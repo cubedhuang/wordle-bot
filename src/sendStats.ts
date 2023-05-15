@@ -133,7 +133,7 @@ export async function sendSpecificStats(i: StringSelectMenuInteraction) {
 	});
 
 	if (typeof stats === "string") {
-		await i.update({
+		await i.followUp({
 			embeds: [
 				{
 					title: "Error",
@@ -148,7 +148,7 @@ export async function sendSpecificStats(i: StringSelectMenuInteraction) {
 
 	const { embed, files } = stats;
 
-	await i.update({
+	await i.followUp({
 		embeds: [embed.setColor("#56a754")],
 		files: files ?? [],
 		components: [statsRow(targetId, i.values[0] as StatsView)]
