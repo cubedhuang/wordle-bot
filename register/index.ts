@@ -18,16 +18,16 @@ const guildId = "833525505932132362";
 const commands = [
 	new SlashCommandBuilder()
 		.setName("help")
-		.setDescription("Display a help menu for Wordle."),
+		.setDescription("Display information about the bot."),
 	new SlashCommandBuilder()
 		.setName("rules")
-		.setDescription("Get the rules for Wordle."),
+		.setDescription("Get the rules for Guess the Word."),
 	new SlashCommandBuilder()
-		.setName("wordle")
-		.setDescription("Start a game of Wordle!"),
+		.setName("play")
+		.setDescription("Start a round of Guess the Word!"),
 	new SlashCommandBuilder()
 		.setName("guess")
-		.setDescription("Guess a word in your current Wordle game.")
+		.setDescription("Guess a word in your current game.")
 		.addStringOption(option =>
 			option
 				.setName("guess")
@@ -36,7 +36,7 @@ const commands = [
 		),
 	new SlashCommandBuilder()
 		.setName("quit")
-		.setDescription("Quit your current Wordle game."),
+		.setDescription("Quit your current game."),
 	new SlashCommandBuilder()
 		.setName("stats")
 		.setDescription("Display statistics about your past games.")

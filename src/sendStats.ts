@@ -30,9 +30,7 @@ const statsOptions = (id: string, value: StatsView) =>
 	new SelectMenuBuilder().setCustomId(id).addOptions([
 		new SelectMenuOptionBuilder()
 			.setLabel("General")
-			.setDescription(
-				"General personal statistics, like the Wordle website."
-			)
+			.setDescription("General personal statistics.")
 			.setValue(StatsView.General)
 			.setEmoji({ name: "wordle", id: "1025939109329514546" })
 			.setDefault(value === StatsView.General),
@@ -182,7 +180,7 @@ async function createGeneralStats({
 		.setTitle(
 			`${
 				target.id === receiver.id ? "Your" : `${target.username}'s`
-			} Wordle Statistics`
+			} Statistics`
 		)
 		.setImage("attachment://stats.webp");
 
@@ -225,7 +223,7 @@ async function createGeneralStats({
 
 async function createGlobalStats(): Promise<StatsOutput> {
 	const embed = new EmbedBuilder()
-		.setTitle("Global Wordle Statistics")
+		.setTitle("Global Statistics")
 		.setImage("attachment://stats.webp");
 
 	const image = buildStatsImage({
@@ -300,7 +298,7 @@ async function createPersonalGuessesStats({
 		.setTitle(
 			`${
 				target.id === receiver.id ? "Your" : `${target.username}'s`
-			} Wordle Statistics: Guesses`
+			} Statistics: Guesses`
 		)
 		.setImage("attachment://stats.webp");
 
@@ -384,7 +382,7 @@ async function createGlobalGuessesStats(): Promise<StatsOutput> {
 	});
 
 	const embed = new EmbedBuilder()
-		.setTitle("Global Wordle Statistics: Guesses")
+		.setTitle("Global Statistics: Guesses")
 		.setImage("attachment://stats.webp");
 
 	return {

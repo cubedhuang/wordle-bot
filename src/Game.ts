@@ -9,7 +9,7 @@ import { db } from "./db.js";
 import { getUser } from "./dbUtils.js";
 import { buildGameImage } from "./image/game.js";
 import { command, range, reply } from "./util.js";
-import { isWordleWord } from "./wordle/index.js";
+import { isValidWord } from "./words/index.js";
 
 function buildRow(target: string, guess: string) {
 	const row: string[] = [];
@@ -40,14 +40,14 @@ function buildGrid(target: string, guesses: string[]) {
 
 function simpleEmbed() {
 	return new EmbedBuilder()
-		.setTitle("Wordle")
-		.setImage("attachment://wordle.webp");
+		.setTitle("Guess the Word")
+		.setImage("attachment://game.webp");
 }
 
 export class Game {
 	current: ChatInputCommandInteraction | null = null;
 
-	async wordle(i: ChatInputCommandInteraction) {
+	async play(i: ChatInputCommandInteraction) {
 		this.current = i;
 
 		await i.deferReply();
@@ -65,7 +65,7 @@ export class Game {
 					"quit"
 				)} to stop playing.${
 					user.activeGame!.guesses.length
-						? "\n\nYou were already in the middle of a Wordle game:"
+						? "\n\nYou were already in the middle of a game:"
 						: ""
 				}`
 			),
@@ -76,7 +76,7 @@ export class Game {
 							user.activeGame!.target,
 							user.activeGame!.guesses!.map(g => g.guess)
 						)
-					).setName("wordle.webp")
+					).setName("game.webp")
 				]
 			}
 		);
@@ -92,8 +92,8 @@ export class Game {
 			return;
 		}
 
-		if (!isWordleWord(guess)) {
-			await reply(i, "That's not a valid Wordle word!", {
+		if (!isValidWord(guess)) {
+			await reply(i, "That's not a valid word!", {
 				ephemeral: true
 			});
 			return;
@@ -123,7 +123,7 @@ export class Game {
 
 		const image = new AttachmentBuilder(
 			buildGameImage(game.target, guesses)
-		).setName("wordle.webp");
+		).setName("game.webp");
 
 		if (
 			// Win condition
@@ -139,12 +139,12 @@ export class Game {
 					`
 The word was **${game.target}**.
 
-Wordle Bot ${win ? guesses.length : "X"}/6
+Guess the Word Bot ${win ? guesses.length : "X"}/6
 
 ${buildGrid(game.target, guesses)}
 			`.trim()
 				)
-				.setImage("attachment://wordle.webp");
+				.setImage("attachment://game.webp");
 
 			await reply(this.current, embed, {
 				files: [image]
@@ -172,7 +172,7 @@ ${buildGrid(game.target, guesses)}
 				i,
 				`You're not currently in a game! Use ${await command(
 					i.client,
-					"wordle"
+					"play"
 				)} to start one.`,
 				{
 					ephemeral: true

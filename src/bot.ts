@@ -42,7 +42,7 @@ const client = new Client({
 		repliedUser: false
 	},
 	presence: {
-		activities: [{ name: "/wordle" }]
+		activities: [{ name: "/play" }]
 	}
 });
 
@@ -58,7 +58,7 @@ client.on("ready", client => {
 	console.log(`Logged in as ${client.user.tag}!`);
 
 	setInterval(() => {
-		client.user.setActivity("/wordle");
+		client.user.setActivity("/play");
 	}, 1000 * 60 * 30);
 });
 
@@ -74,8 +74,8 @@ const commands: Record<
 		await reply(i, await rulesEmbed(i.client));
 	},
 
-	async wordle(i) {
-		await getGame(i.user.id).wordle(i);
+	async play(i) {
+		await getGame(i.user.id).play(i);
 	},
 
 	async guess(i) {

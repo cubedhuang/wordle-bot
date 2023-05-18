@@ -1,5 +1,5 @@
 import { db } from "./db.js";
-import { getRandomWordleAnswer } from "./wordle/index.js";
+import { getRandomAnswer } from "./words/index.js";
 
 export async function getUser(id: bigint) {
 	const user = await db.user.upsert({
@@ -12,7 +12,7 @@ export async function getUser(id: bigint) {
 	if (!user.activeGame) {
 		await db.game.create({
 			data: {
-				target: getRandomWordleAnswer(),
+				target: getRandomAnswer(),
 				userId: id,
 				activeUserId: id
 			},
