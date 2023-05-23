@@ -1,7 +1,12 @@
 import { GameResult } from "@prisma/client";
 import {
+	ActionRowBuilder,
 	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
 	ChatInputCommandInteraction,
+	CommandInteraction,
 	EmbedBuilder
 } from "discord.js";
 
@@ -10,6 +15,14 @@ import { getUser } from "./dbUtils.js";
 import { buildGameImage } from "./image/game.js";
 import { command, range, reply } from "./util.js";
 import { isValidWord } from "./words/index.js";
+
+const playAgain = new ActionRowBuilder<ButtonBuilder>().addComponents(
+	new ButtonBuilder()
+		.setCustomId("new")
+		.setLabel("Play Again!")
+		.setStyle(ButtonStyle.Primary)
+		.setEmoji("🔄")
+);
 
 function buildRow(target: string, guess: string) {
 	const row: string[] = [];
@@ -45,9 +58,9 @@ function simpleEmbed() {
 }
 
 export class Game {
-	current: ChatInputCommandInteraction | null = null;
+	current: CommandInteraction | ButtonInteraction | null = null;
 
-	async play(i: ChatInputCommandInteraction) {
+	async play(i: CommandInteraction | ButtonInteraction) {
 		this.current = i;
 
 		await i.deferReply();
@@ -147,7 +160,8 @@ ${buildGrid(game.target, guesses)}
 				.setImage("attachment://game.webp");
 
 			await reply(this.current, embed, {
-				files: [image]
+				files: [image],
+				components: [playAgain]
 			});
 
 			await this.done(id, win ? "WIN" : "LOSS");
@@ -186,7 +200,8 @@ ${buildGrid(game.target, guesses)}
 			i,
 			`Stopped the current game. The word was **${
 				user.activeGame!.target
-			}**.`
+			}**.`,
+			{ components: [playAgain] }
 		);
 
 		await this.done(id, "QUIT");
@@ -201,5 +216,7 @@ ${buildGrid(game.target, guesses)}
 				result
 			}
 		});
+
+		this.current = null;
 	}
 }

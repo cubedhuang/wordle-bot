@@ -147,6 +147,24 @@ client.on(Events.InteractionCreate, async i => {
 	}
 
 	if (i.isButton()) {
+		if (i.customId === "new") {
+			const transaction = Sentry.startTransaction({
+				op: "button",
+				name: "new",
+				data: { user: i.user.id }
+			});
+
+			await getGame(i.user.id)
+				.play(i)
+				.catch(err => {
+					handleInteractionError(i, err);
+				});
+
+			transaction.finish();
+
+			return;
+		}
+
 		const transaction = Sentry.startTransaction({
 			op: "button",
 			name: "history",
