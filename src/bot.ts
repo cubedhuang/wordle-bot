@@ -10,6 +10,7 @@ import {
 	EmbedBuilder,
 	Events,
 	GatewayIntentBits,
+	Options,
 	StringSelectMenuInteraction,
 	WebhookClient
 } from "discord.js";
@@ -43,7 +44,29 @@ const client = new Client({
 	},
 	presence: {
 		activities: [{ name: "/play" }]
-	}
+	},
+	makeCache: Options.cacheWithLimits({
+		AutoModerationRuleManager: 0,
+		ApplicationCommandManager: 0,
+		BaseGuildEmojiManager: 0,
+		GuildBanManager: 0,
+		GuildEmojiManager: 0,
+		GuildForumThreadManager: 0,
+		GuildInviteManager: 0,
+		GuildMemberManager: 0,
+		GuildScheduledEventManager: 0,
+		GuildStickerManager: 0,
+		GuildTextThreadManager: 0,
+		MessageManager: 0,
+		PresenceManager: 0,
+		ReactionManager: 0,
+		ReactionUserManager: 0,
+		StageInstanceManager: 0,
+		ThreadManager: 0,
+		ThreadMemberManager: 0,
+		UserManager: 0,
+		VoiceStateManager: 0
+	})
 });
 
 const webhook = new WebhookClient({ url: process.env.WEBHOOK_URL! });
