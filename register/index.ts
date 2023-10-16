@@ -52,7 +52,7 @@ const commands = [
 
 for (const command of commands) {
 	// @ts-expect-error
-	command.contexts = [0, 1, 2];
+	command.contexts = [0, 1];
 }
 
 const rest = new REST().setToken(token!);
