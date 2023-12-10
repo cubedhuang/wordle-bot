@@ -2,7 +2,7 @@ import { Canvas, Image } from "@napi-rs/canvas";
 
 import { FONT_FAMILY, FONT_FAMILY_MONO, GREEN } from "./constants.js";
 
-const IMAGE_SCALE = 5;
+const IMAGE_SCALE = 2;
 
 const MAX_BAR_WIDTH = 180;
 const MIN_BAR_WIDTH = 28;
