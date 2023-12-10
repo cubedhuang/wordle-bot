@@ -24,6 +24,10 @@ model Game {
     guesses      Guess[]
     startTime    DateTime   @default(now())
     endTime      DateTime?
+
+    @@index(fields: [result])
+    @@index(fields: [userId])
+    @@index(fields: [activeUserId])
 }
 
 model Guess {
@@ -31,6 +35,9 @@ model Guess {
     game   Game   @relation(fields: [gameId], references: [id])
     gameId Int
     guess  String @db.VarChar(5)
+
+    @@index(fields: [gameId])
+    @@index(fields: [guess])
 }
 
 enum GameResult {
