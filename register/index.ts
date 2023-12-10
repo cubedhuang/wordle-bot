@@ -52,10 +52,18 @@ const commands = [
 
 for (const command of commands) {
 	// @ts-expect-error
-	command.contexts = [0, 1];
+	command.contexts = [0, 1, 2];
+	// @ts-expect-error
+	command.integration_types = [0, 1];
 }
 
 const rest = new REST().setToken(token!);
+
+await rest.patch("/applications/@me", {
+	body: {
+		integration_types: [0, 1]
+	}
+});
 
 console.log("Started refreshing interactions.");
 
