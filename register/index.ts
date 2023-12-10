@@ -13,7 +13,7 @@ console.log(
 const token = isDev ? process.env.TOKEN_DEV : process.env.TOKEN;
 
 const applicationId = isDev ? "847923734438608916" : "979977332645302272";
-const guildId = "833525505932132362";
+const guildId = "979976981850497074";
 
 const commands = [
 	new SlashCommandBuilder()

@@ -330,33 +330,17 @@ async function createGlobalGuessesStats(): Promise<StatsOutput> {
 
 	const image = buildStatsGuessesImage({
 		topTotal: (
-			await db.guess.groupBy({
-				where: { game: { result: { not: "PLAYING" } } },
-				by: ["guess"],
-				_count: { guess: true },
-				orderBy: { _count: { guess: "desc" } },
-				take: 10
-			})
-		).map(g => [g.guess, g._count.guess]),
+			(await db.$queryRaw`
+				SELECT guess, count
+				FROM "GlobalTopGuesses"
+			`) as { guess: string; count: bigint }[]
+		).map(g => [g.guess, Number(g.count)]),
 
 		// same as topTotal but only for the first guess of each game
 		topFirst: (
 			(await db.$queryRaw`
-				SELECT guess, COUNT(guess) AS count
-				FROM "Guess"
-				WHERE "gameId" IN (
-					SELECT id
-					FROM "Game"
-					WHERE result != 'PLAYING'
-				)
-				AND id IN (
-					SELECT MIN(id)
-					FROM "Guess"
-					GROUP BY "gameId"
-				)
-				GROUP BY guess
-				ORDER BY count DESC
-				LIMIT 10
+				SELECT guess, count
+				FROM "GlobalTopFirstGuesses"
 			`) as { guess: string; count: bigint }[]
 		).map(g => [g.guess, Number(g.count)]),
 
@@ -365,7 +349,7 @@ async function createGlobalGuessesStats(): Promise<StatsOutput> {
 		// prisma count doesn't support DISTINCT
 		unique: Number(
 			(
-				(await db.$queryRaw`SELECT COUNT(DISTINCT guess) FROM "Guess"`) as {
+				(await db.$queryRaw`SELECT count FROM "GlobalUniqueGuessesCount"`) as {
 					count: bigint;
 				}[]
 			)[0].count
@@ -397,9 +381,7 @@ async function createBotStats({ client }: StatsInput): Promise<StatsOutput> {
 
 	const globalServers =
 		(
-			(await client.shard?.fetchClientValues(
-				"guilds.cache.size"
-			)) as number[]
+			(await client.shard?.fetchClientValues("guilds.cache.size")) as number[]
 		)?.reduce((a, b) => a + b, 0) ?? client.guilds.cache.size;
 	const globalUsers =
 		(
@@ -410,10 +392,7 @@ async function createBotStats({ client }: StatsInput): Promise<StatsOutput> {
 		client.guilds.cache.reduce((a, g) => a + g.memberCount, 0);
 
 	const shardServers = client.guilds.cache.size;
-	const shardUsers = client.guilds.cache.reduce(
-		(a, g) => a + g.memberCount,
-		0
-	);
+	const shardUsers = client.guilds.cache.reduce((a, g) => a + g.memberCount, 0);
 
 	return {
 		embed: new EmbedBuilder()

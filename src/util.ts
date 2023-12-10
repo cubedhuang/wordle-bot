@@ -74,7 +74,7 @@ export async function command(client: Client, name: string) {
 	}
 
 	commands ??= await client.application?.commands.fetch({
-		guildId: isDev ? "833525505932132362" : undefined
+		guildId: isDev ? "979976981850497074" : undefined
 	});
 
 	const id = commands?.find(c => c.name === name)?.id;
