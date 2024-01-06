@@ -10,3 +10,4 @@ processes = []
   auto_rollback = true
 
 [[services]]
+  auto_stop_machines = false
