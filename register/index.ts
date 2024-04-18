@@ -61,7 +61,10 @@ const rest = new REST().setToken(token!);
 
 await rest.patch("/applications/@me", {
 	body: {
-		integration_types: [0, 1]
+		integration_types_config: {
+			0: null,
+			1: null
+		}
 	}
 });
 
